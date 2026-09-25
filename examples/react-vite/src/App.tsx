@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useTrace, useTraceora, TraceoraDevtools } from '@traceora/react'
+import { useTrace, TraceoraDevtools } from '@traceora/react'
 import './App.css'
 
 function App() {
