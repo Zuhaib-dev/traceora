@@ -51,7 +51,7 @@ export const TraceoraDevtools: React.FC = () => {
           left: "24px",
           width: "56px",
           height: "56px",
-          background: "linear-gradient(135deg, #1971c2, #1864ab)",
+          background: "linear-gradient(135deg, #2b8a3e, #099268)",
           color: "#fff",
           border: "none",
           borderRadius: "50%",
@@ -60,7 +60,7 @@ export const TraceoraDevtools: React.FC = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          boxShadow: "0 4px 20px rgba(25, 113, 194, 0.4)",
+          boxShadow: "0 4px 20px rgba(9, 146, 104, 0.4)",
           transition: "transform 0.2s ease, box-shadow 0.2s ease",
         }}
         onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
@@ -80,7 +80,7 @@ export const TraceoraDevtools: React.FC = () => {
       height: "450px",
       background: "#0f1115",
       color: "#e0e0e0",
-      borderTop: "1px solid #2a2d35",
+      borderTop: "2px solid #099268",
       display: "flex",
       flexDirection: "column",
       zIndex: 99999,
@@ -109,7 +109,7 @@ export const TraceoraDevtools: React.FC = () => {
         alignItems: "center"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ color: "#339af0", display: "flex", alignItems: "center" }}>
+          <div style={{ color: "#20c997", display: "flex", alignItems: "center" }}>
             <TraceoraIcon />
           </div>
           <strong style={{ fontSize: "15px", letterSpacing: "0.5px", color: "#fff" }}>TRACEORA</strong>
@@ -120,8 +120,8 @@ export const TraceoraDevtools: React.FC = () => {
                 key={f}
                 onClick={() => setFilter(f as any)}
                 style={{
-                  background: filter === f ? "#2a2d35" : "transparent",
-                  color: filter === f ? "#fff" : "#888",
+                  background: filter === f ? "rgba(32, 201, 151, 0.15)" : "transparent",
+                  color: filter === f ? "#20c997" : "#888",
                   border: "none",
                   borderRadius: "4px",
                   padding: "4px 12px",
@@ -209,7 +209,7 @@ export const TraceoraDevtools: React.FC = () => {
                   {ev.source || "unknown"}
                 </span>
                 {ev.traceId && (
-                  <span style={{ background: "rgba(51, 154, 240, 0.1)", color: "#339af0", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
+                  <span style={{ background: "rgba(32, 201, 151, 0.1)", color: "#20c997", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
                     Trace: {ev.traceId}
                   </span>
                 )}
