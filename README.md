@@ -31,6 +31,7 @@ Traceora is built as a highly composable monorepo:
 | [`@traceora/core`](./packages/core/README.md) | The framework-agnostic event engine. Handles network interception, error catching, and the memory store. |
 | [`@traceora/react`](./packages/react/README.md) | React-specific bindings. Includes context providers, error boundaries, and the floating DevTools timeline. |
 | [`@traceora/vite-plugin`](./packages/vite-plugin/README.md) | The magic. A custom Babel compiler that automatically injects tracking code into your React components during build. |
+| [`@traceora/express`](./packages/express/README.md) | The backend adapter. Uses Node `AsyncLocalStorage` and HTTP Headers to seamlessly inject database and backend errors straight into your frontend timeline. |
 
 ## Quick Setup (React + Vite)
 
@@ -79,6 +80,42 @@ createRoot(document.getElementById('root')!).render(
     </TraceoraProvider>
   </StrictMode>,
 )
+```
+
+## Quick Setup (Express Backend)
+
+If you have a backend API, Traceora seamlessly connects your backend logs to your frontend timeline.
+
+### 1. Install
+
+```bash
+npm install @traceora/express
+```
+
+### 2. Add Middleware
+
+Add the traceora middleware *before* your routes. Make sure your `cors` is configured to expose the custom headers!
+
+```ts
+import express from "express";
+import cors from "cors";
+import { traceora, emitTraceEvent } from "@traceora/express";
+
+const app = express();
+
+app.use(cors({ exposedHeaders: ["X-Traceora-Events"] }));
+app.use(traceora());
+
+app.get("/api/data", (req, res) => {
+  // Traceora will instantly inject this backend event into your React DevTools!
+  emitTraceEvent({
+    type: "STATE_CHANGE",
+    source: "MySQL",
+    metadata: { query: "SELECT * FROM users" }
+  });
+  
+  res.json({ ok: true });
+});
 ```
 
 ## Tech Stack
