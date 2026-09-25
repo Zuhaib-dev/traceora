@@ -8,6 +8,7 @@ export type TraceEventType =
   | "NETWORK_REQUEST"
   | "NETWORK_RESPONSE"
   | "NETWORK_ERROR"
+  | "PERFORMANCE_WARNING"
   | "ERROR";
 
 export interface TraceEvent {

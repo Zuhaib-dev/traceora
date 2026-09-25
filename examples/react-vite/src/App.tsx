@@ -42,6 +42,29 @@ function App() {
         </button>
       </div>
 
+      <div style={{ margin: '2rem 0', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#e03131', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            // Trigger 10 renders instantly
+            for(let i=0; i<10; i++) setCount(c => c + 1);
+          }}
+        >
+          Spam Renders
+        </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#1971c2', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            // Fire two identical requests instantly
+            fetch("https://jsonplaceholder.typicode.com/posts/1");
+            fetch("https://jsonplaceholder.typicode.com/posts/1");
+          }}
+        >
+          Duplicate API
+        </button>
+      </div>
+
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
         <h3>Instructions</h3>
         <p>1. Check out the floating Traceora panel in the bottom right!</p>
