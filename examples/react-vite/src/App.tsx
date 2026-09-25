@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { useComponentTrace, useTrace, useTraceora } from '@traceora/react'
+import { useComponentTrace, useTrace, useTraceora, TraceoraDevtools } from '@traceora/react'
 import './App.css'
 
 function App() {
   // Automatically trace Mount, Render, and Unmount
   useComponentTrace("App");
   
-  // Get access to the raw emitter for custom events
-  const emitter = useTraceora();
+  // Get access to the trace starter
   const startTrace = useTrace();
   
   const [count, setCount] = useState(0)
@@ -41,9 +40,11 @@ function App() {
 
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
         <h3>Instructions</h3>
-        <p>1. Open Developer Tools (F12)</p>
-        <p>2. We haven't hooked up a console logger yet, but the <code>EventStore</code> in memory is capturing these!</p>
+        <p>1. Check out the floating Traceora panel in the bottom right!</p>
+        <p>2. Interact with the app to see events populate in real-time.</p>
       </div>
+
+      <TraceoraDevtools />
     </div>
   )
 }
