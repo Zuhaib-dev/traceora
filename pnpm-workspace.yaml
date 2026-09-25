@@ -2,5 +2,3 @@ packages:
   - "packages/*"
   - "examples/*"
   - "apps/*"
-allowBuilds:
-  esbuild: set this to true or false
