@@ -1,14 +1,24 @@
 # @traceora/core
 
-The core, framework-agnostic runtime intelligence engine for Traceora.
+> The intelligent, framework-agnostic runtime engine for Traceora.
 
-Traceora is not just an error logger. It's an intelligent runtime toolkit that reconstructs the exact sequence of events (mounts, renders, clicks, API calls, and errors) that occur in your application.
+[![npm version](https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square)](https://www.npmjs.com/package/@traceora/core)
+
+This package contains the core logic for the Traceora ecosystem. It handles event aggregation, trace ID generation, network interception, global error handling, and performance heuristics.
 
 ## Installation
 
 ```bash
 npm install @traceora/core
 ```
+
+## Features
+
+- **Event Bus (`EventEmitter`)**: A publish-subscribe pattern that decoupled event generation from storage.
+- **Trace Context (`TraceID`)**: Correlates events that belong to the same logical interaction (e.g. A user clicks a button, which triggers a network request).
+- **Network Interception**: Automatically wraps `window.fetch` to capture request/response data and detect duplicate requests.
+- **Error Intelligence**: Captures `window.onerror` and `unhandledrejection` events.
+- **Performance Monitor**: Detects spam renders or rapidly repeating network requests.
 
 ## Usage
 
@@ -17,23 +27,27 @@ This package is typically used under the hood by framework adapters like `@trace
 ```typescript
 import { EventStore, EventEmitter, setupNetworkInstrumentation, setupErrorInstrumentation, PerformanceMonitor } from "@traceora/core";
 
+// 1. Initialize the storage and emitter
 const store = new EventStore();
 const emitter = new EventEmitter(store);
 
-// Automatically intercept window.fetch
+// 2. Automatically intercept window.fetch
 setupNetworkInstrumentation(emitter);
 
-// Automatically catch window.onerror and unhandledrejection
+// 3. Automatically catch window.onerror and unhandledrejection
 setupErrorInstrumentation(emitter);
 
-// Automatically monitor for performance issues (e.g., duplicate requests)
+// 4. Automatically monitor for performance issues
 new PerformanceMonitor(emitter);
 
-// Manually track a trace
+// 5. Manually track a trace
 const trace = emitter.startTrace("User_Login");
 trace.emit({ type: "USER_INTERACTION", source: "Submit_Button" });
 ```
 
-## Author
+---
 
-Created by [Zuhaib Rashid](https://zuhaibrashid.com) | [GitHub: zuhaib-dev](https://github.com/zuhaib-dev/traceora)
+### Author
+**Zuhaib Rashid**
+- 🌍 [zuhaibrashid.com](https://zuhaibrashid.com)
+- 🐙 [GitHub: @zuhaib-dev](https://github.com/zuhaib-dev)
