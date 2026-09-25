@@ -1,0 +1,62 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+import Link from 'next/link'
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  ExternalLink,
+  Hexagon,
+  Menu,
+  Search,
+  Terminal,
+  X,
+} from 'lucide-react'
+
+const install = 'npm install @traceora/core @traceora/react @traceora/vite-plugin'
+const sections = [
+  { title: 'Getting started', items: ['Introduction', 'Installation', 'Quick start'] },
+  { title: 'Core concepts', items: ['How Traceora works', 'Trace context', 'Event model'] },
+  { title: 'Packages', items: ['@traceora/react', '@traceora/express', '@traceora/vite-plugin'] },
+  { title: 'Guides', items: ['Debug a user flow', 'Production setup', 'Troubleshooting'] },
+]
+
+function Logo() {
+  return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link>
+}
+
+function CodeBlock({ code, label = 'terminal' }: { code: string; label?: string }) {
+  const [copied, setCopied] = useState(false)
+  const copyCode = async () => { await navigator.clipboard?.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1400) }
+  return <div className="overflow-hidden rounded-xl border border-border bg-[#0a100f] shadow-xl shadow-black/10"><div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-[11px] text-muted-foreground"><span className="flex items-center gap-2 font-mono"><span className="flex gap-1.5"><i className="size-2 rounded-full bg-[#ff5f57]" /><i className="size-2 rounded-full bg-[#febc2e]" /><i className="size-2 rounded-full bg-[#28c840]" /></span>{label}</span><button onClick={copyCode} className="flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label="Copy code">{copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}{copied ? 'copied' : 'copy'}</button></div><pre className="overflow-x-auto p-5 font-mono text-[12px] leading-6 text-[#b6c8c2]"><code>{code}</code></pre></div>
+}
+
+export default function DocsPage() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [active, setActive] = useState('Introduction')
+  const [version, setVersion] = useState('v1.4')
+  const visibleSections = useMemo(() => sections.map((section) => ({ ...section, items: section.items.filter((item) => item.toLowerCase().includes(query.toLowerCase())) })).filter((section) => section.items.length), [query])
+
+  return <main className="min-h-screen bg-background text-foreground"><div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />
+    <header className="relative z-30 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex max-w-[1440px] items-center justify-between px-5 py-4 lg:px-8"><Logo /><nav className="hidden items-center gap-7 text-sm md:flex"><Link href="/" className="text-muted-foreground hover:text-foreground">Product</Link><Link href="/blogs" className="text-muted-foreground hover:text-foreground">Journal</Link><Link href="/docs" className="text-foreground">Docs</Link></nav><div className="flex items-center gap-3"><div className="hidden items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground sm:flex"><span className="size-1.5 rounded-full bg-primary" /> v1.4 stable <ChevronDown className="size-3" /></div><Link href="/#docs" className="hidden rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground sm:block">Start tracing <ArrowRight className="ml-1 inline size-3" /></Link><button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}</button></div></div>{menuOpen && <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm md:hidden"><Link href="/">Product</Link><Link href="/blogs">Journal</Link><Link href="/docs">Docs</Link></nav>}</header>
+
+    <div className="relative mx-auto flex max-w-[1440px] px-5 lg:px-8"><aside className="hidden w-64 shrink-0 border-r border-border py-10 pr-8 lg:block"><div className="sticky top-8"><p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Documentation</p><label className="mb-8 flex items-center gap-2 border-b border-border py-2 text-sm text-muted-foreground focus-within:border-primary"><Search className="size-3.5" /><span className="sr-only">Search documentation</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs" className="w-full bg-transparent outline-none placeholder:text-muted-foreground/60" /></label><div className="flex flex-col gap-7">{visibleSections.map((section) => <div key={section.title}><p className="mb-3 text-xs font-medium text-foreground">{section.title}</p><div className="flex flex-col gap-1">{section.items.map((item) => <button key={item} onClick={() => setActive(item)} className={`flex items-center justify-between rounded-md px-2.5 py-2 text-left text-xs transition-colors ${active === item ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`}>{item}{active === item && <ChevronRight className="size-3" />}</button>)}</div></div>)}</div></div></aside>
+
+      <section className="min-w-0 flex-1 lg:pl-14"><div className="flex items-center gap-2 py-5 text-xs text-muted-foreground"><Link href="/" className="hover:text-foreground">Docs</Link><ChevronRight className="size-3" /><span className="text-foreground">{active}</span></div><div className="grid gap-16 pb-24 pt-12 xl:grid-cols-[minmax(0,720px)_180px] xl:gap-20"><article className="min-w-0"><div className="mb-8 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary"><span className="size-1.5 rounded-full bg-primary" /> Traceora docs <span className="text-muted-foreground">/ {version}</span></div><h1 className="text-balance text-5xl font-medium leading-[0.95] tracking-[-0.065em] sm:text-7xl">Build software that<br /><span className="text-primary">explains itself.</span></h1><p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground">Traceora connects the dots between a user interaction and everything it sets in motion. This guide gets you from install to your first full-stack trace.</p><div className="mt-10 flex flex-wrap gap-3"><a href="#install" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Quick start <ArrowRight className="size-4" /></a><a href="https://github.com" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium hover:border-primary/40">View examples <ExternalLink className="size-3.5" /></a></div>
+
+        <div className="relative mt-16 overflow-hidden rounded-2xl border border-primary/20 bg-[#0a1110] p-5 shadow-2xl shadow-primary/10 sm:p-8" aria-label="Live trace visualization"><div className="absolute inset-0 grid-bg opacity-40" /><div className="relative flex items-center justify-between border-b border-white/10 pb-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground"><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary motion-safe:animate-pulse" /> live trace / checkout-flow</span><span className="text-primary">streaming</span></div><div className="relative grid min-h-[250px] grid-cols-[1fr_auto_1fr] items-center gap-3 py-8 sm:gap-8"><div className="flex flex-col gap-3"><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> button.click</div><div className="trace-node"><span className="size-2 rounded-full bg-cyan-300" /> cart.addItem</div><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> checkout.open</div></div><div className="relative flex h-full w-10 items-center justify-center"><div className="h-full w-px bg-gradient-to-b from-transparent via-primary to-transparent" /><i className="trace-packet absolute left-1/2 top-1/4 size-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_16px_4px] shadow-primary" /></div><div className="flex flex-col gap-3"><div className="trace-node"><span className="size-2 rounded-full bg-amber-300" /> POST /api/cart</div><div className="trace-node"><span className="size-2 rounded-full bg-cyan-300" /> db.query</div><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> 200 OK · 184ms</div></div></div><div className="relative flex items-center justify-between border-t border-white/10 pt-4 text-[10px] font-mono text-muted-foreground"><span>6 events linked</span><span className="text-primary">→ zero context switching</span></div></div>
+
+        <div id="install" className="mt-20 border-t border-border pt-10"><p className="font-mono text-xs text-primary">01 / Installation</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Add Traceora to your app</h2><p className="mt-4 leading-7 text-muted-foreground">Install the core packages with your preferred package manager. The Vite plugin handles instrumentation at build time, so your components stay clean.</p><div className="mt-7"><CodeBlock code={install} /></div></div>
+        <div className="mt-16 border-t border-border pt-10"><p className="font-mono text-xs text-primary">02 / Configure</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Start with the Vite plugin</h2><p className="mt-4 leading-7 text-muted-foreground">Add the plugin before React in your Vite config. That&apos;s all it takes to begin collecting a linked event timeline in development.</p><div className="mt-7"><CodeBlock label="vite.config.ts" code={`import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\nimport { traceoraPlugin } from '@traceora/vite-plugin'\n\nexport default defineConfig({\n  plugins: [traceoraPlugin(), react()],\n})`} /></div></div>
+        <div className="mt-16 rounded-xl border border-primary/20 bg-primary/8 p-6"><div className="flex items-center gap-3"><Terminal className="size-4 text-primary" /><p className="text-sm font-medium">Ready to see your first trace?</p></div><p className="mt-3 text-sm leading-6 text-muted-foreground">Run your app, open the Traceora panel, and interact with any instrumented component. The timeline will appear in real time.</p><Link href="/blogs" className="mt-5 inline-flex items-center gap-2 text-sm text-primary">Read the field notes <ArrowRight className="size-4" /></Link></div>
+        <div className="mt-16 flex items-center justify-between border-t border-border pt-6 text-sm"><button className="flex items-center gap-2 text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Previous</button><button className="flex items-center gap-2 text-primary">Installation <ArrowRight className="size-4" /></button></div></article>
+        <aside className="hidden xl:block"><div className="sticky top-8 border-l border-border pl-5"><p className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">On this page</p><div className="flex flex-col gap-3 text-xs text-muted-foreground"><a href="#install" className="text-primary">Installation</a><a href="#install" className="hover:text-foreground">Configure</a><a href="#install" className="hover:text-foreground">Next steps</a></div><div className="mt-10 border-t border-border pt-5"><p className="text-xs text-muted-foreground">Need help?</p><a href="https://github.com" className="mt-2 inline-flex items-center gap-1 text-xs text-primary">Ask on GitHub <ExternalLink className="size-3" /></a></div></div></aside>
+      </div></section>
+    </div>
+  </main>
+}
