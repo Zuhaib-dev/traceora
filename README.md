@@ -1,11 +1,11 @@
 <div align="center">
-  <img src="https://via.placeholder.com/150x150/099268/ffffff?text=Traceora" alt="Traceora Logo" width="120" height="120" style="border-radius: 20px;" />
+  <img src="./assets/logo.svg" alt="Traceora Logo" width="120" height="120" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
   
   <h1>Traceora</h1>
   <p><strong>Runtime Intelligence & Telemetry for Modern Applications</strong></p>
 
   [![npm version](https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square)](https://www.npmjs.com/package/@traceora/core)
-  [![license](https://img.shields.io/npm/l/@traceora/core.svg?style=flat-square)](https://github.com/zuhaib-dev/traceora/blob/main/LICENSE)
+  [![license](https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square)](https://github.com/zuhaib-dev/traceora/blob/main/LICENSE)
 </div>
 
 <hr />
@@ -114,10 +114,12 @@ pnpm dev
 ---
 
 <div align="center">
-  <h3>Author</h3>
-  <p>Built with ❤️ by <strong>Zuhaib Rashid</strong></p>
+  <img src="https://zuhaib-portfolio-tau.vercel.app/_next/image?url=%2FprofilePic.webp&w=256&q=75" alt="Zuhaib Rashid" width="100" height="100" style="border-radius: 50%; border: 2px solid #099268; margin-bottom: 10px;" />
+  <br />
+  <h3>Built by Zuhaib Rashid</h3>
+  <p><strong>Full-Stack Engineer | MERN & Next.js | Scalable Web Applications | Generative AI & AI Integration</strong></p>
   <a href="https://zuhaibrashid.com">🌍 Portfolio</a> &nbsp; | &nbsp; 
   <a href="https://github.com/zuhaib-dev">🐙 GitHub</a> &nbsp; | &nbsp; 
-  <a href="https://twitter.com/zuhaib_rashid">🐦 Twitter / X</a> &nbsp; | &nbsp; 
-  <a href="https://www.linkedin.com/in/zuhaibrashid/">💼 LinkedIn</a>
+  <a href="https://x.com/xuhaib_x9">🐦 Twitter / X</a> &nbsp; | &nbsp; 
+  <a href="https://www.linkedin.com/in/zuhaib-rashid-661345318/">💼 LinkedIn</a>
 </div>
