@@ -24,9 +24,9 @@ function App() {
             const trace = startTrace("App.CounterButton_Click", { action: "increment", currentCount: count });
             
             // Log a fake internal event inside this trace
-            trace.emit({ type: "STATE_CHANGE", source: "setCount", metadata: { from: count, to: count + 1 } });
+            trace.emit({ type: "STATE_CHANGE", source: "setCount", metadata: { from: count, to: (count as number) + 1 } });
             
-            setCount((c) => c + 1);
+            setCount((c) => (c as number) + 1);
             
             // Simulate a real network request grouped in the same trace!
             // The global fetch has been instrumented by Traceora.
@@ -38,7 +38,7 @@ function App() {
               });
           }}
         >
-          Count is {count}
+          Count is {(count as number).toFixed(0)}
         </button>
       </div>
 
@@ -62,6 +62,26 @@ function App() {
           }}
         >
           Duplicate API
+        </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#e8590c', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            // Throw an error during a click handler (caught by window.onerror)
+            throw new Error("Whoops! Unhandled click error");
+          }}
+        >
+          Throw Error
+        </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#d9480f', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            // Force a React render crash (caught by ErrorBoundary)
+            setCount("CRASH_ME" as any);
+          }}
+        >
+          Crash React
         </button>
       </div>
 

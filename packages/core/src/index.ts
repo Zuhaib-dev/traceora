@@ -3,3 +3,4 @@ export * from "./EventStore";
 export * from "./EventEmitter";
 export * from "./network";
 export * from "./performance";
+export * from "./errors";

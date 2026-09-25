@@ -2,12 +2,14 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
-import { TraceoraProvider } from '@traceora/react'
+import { TraceoraProvider, TraceoraErrorBoundary } from '@traceora/react'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TraceoraProvider>
-      <App />
+      <TraceoraErrorBoundary>
+        <App />
+      </TraceoraErrorBoundary>
     </TraceoraProvider>
   </StrictMode>,
 )
