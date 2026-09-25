@@ -50,10 +50,5 @@
   "bugs": {
     "url": "https://github.com/zuhaib-dev/traceora/issues"
   },
-  "homepage": "https://github.com/zuhaib-dev/traceora#readme",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  }
+  "homepage": "https://github.com/zuhaib-dev/traceora#readme"
 }
