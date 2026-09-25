@@ -2,9 +2,21 @@
   "name": "@traceora/core",
   "version": "0.1.0",
   "description": "Core event engine and runtime intelligence for Traceora",
+  "author": "Zuhaib Rashid (https://zuhaibrashid.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuhaib-dev/traceora.git",
+    "directory": "packages/core"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

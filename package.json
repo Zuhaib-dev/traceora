@@ -4,6 +4,11 @@
   "engines": {
     "node": ">=18"
   },
+  "author": "Zuhaib Rashid (https://zuhaibrashid.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuhaib-dev/traceora.git"
+  },
   "scripts": {
     "build": "pnpm --filter \"./packages/**\" build",
     "dev": "pnpm --filter \"./packages/**\" dev",

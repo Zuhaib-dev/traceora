@@ -2,9 +2,21 @@
   "name": "@traceora/react",
   "version": "0.1.0",
   "description": "React instrumentation for Traceora",
+  "author": "Zuhaib Rashid (https://zuhaibrashid.com)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuhaib-dev/traceora.git",
+    "directory": "packages/react"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

@@ -1,44 +1,40 @@
 # Traceora
 
-> **Runtime intelligence for modern applications.**
+> Runtime intelligence for modern applications.
 
-**Traceora** is an open-source runtime intelligence and debugging toolkit designed to help developers understand what their applications are actually doing at runtime.
+Traceora is an open-source debugging toolkit that helps developers understand what their applications are actually doing at runtime.
 
-Instead of relying entirely on `console.log()`, browser DevTools, scattered error messages, and manual debugging, Traceora collects structured runtime events and connects them into meaningful timelines and traces.
+Instead of hunting through `console.log` statements or trying to decipher isolated crash reports, Traceora reconstructs the exact sequence of events (mounts, renders, clicks, API calls, state changes, and errors) into a unified timeline.
 
-## Project Structure
+## Packages
 
-This is a monorepo managed with `pnpm`.
+- **`@traceora/core`**: The framework-agnostic event engine and memory store. It handles network interception, global error capturing, and performance diagnostics.
+- **`@traceora/react`**: React-specific bindings, hooks, context providers, and the floating DevTools timeline.
 
-- `packages/core`: The framework-agnostic runtime event engine.
-- `packages/react`: React instrumentation and components.
-- `examples/`: Example applications demonstrating Traceora.
-- `docs/`: Project documentation.
+## Why Traceora?
 
-## Quick Start (Development)
+1. **Causality Tracking**: Group related events (a button click -> 4 state changes -> 2 API calls) under a single `TraceID`.
+2. **Performance Intelligence**: Detect excessive component re-renders or duplicate API requests automatically at runtime without manual performance profiling.
+3. **Missing Context**: When an error happens, Traceora shows you the exact events that led up to it.
 
-1. **Install dependencies:**
-   ```bash
-   pnpm install
-   ```
+## Development
 
-2. **Build packages:**
-   ```bash
-   pnpm build
-   ```
+Traceora uses a `pnpm` monorepo.
 
-3. **Run tests:**
-   ```bash
-   pnpm test
-   ```
+```bash
+# Install dependencies
+pnpm install
 
-## Philosophy
+# Run the build watcher for the packages
+pnpm dev
 
-- **Developer First:** Solves real developer problems with minimal configuration.
-- **TypeScript First:** Built with strong types.
-- **Privacy First:** Local development by default, no automatic uploads.
-- **Framework Agnostic Core:** The core engine doesn't depend on React.
+# Run the playground test app (in a separate terminal)
+cd examples/react-vite
+pnpm dev
+```
 
-## Documentation
+## Author
 
-See the [docs](./docs/README.md) directory for more detailed architectural and usage documentation.
+Created by [Zuhaib Rashid](https://zuhaibrashid.com).
+
+**GitHub**: [@zuhaib-dev](https://github.com/zuhaib-dev/traceora)
