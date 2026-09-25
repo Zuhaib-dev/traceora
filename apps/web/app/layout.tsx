@@ -3,34 +3,30 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
-  generator: 'v0.app',
-  icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+  title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
+  description: 'Traceora turns scattered logs into one causally-linked timeline — from a React interaction to the exact database query that followed it.',
+  keywords: ['traceora', 'react', 'express', 'tracing', 'full-stack', 'devtools', 'profiling', 'runtime intelligence'],
+  authors: [{ name: 'Zuhaib Rashid', url: 'https://zuhaibrashid.com' }],
+  creator: 'Zuhaib Rashid',
+  openGraph: {
+    title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
+    description: 'Traceora turns scattered logs into one causally-linked timeline.',
+    url: 'https://traceora.zuhaibrashid.com',
+    siteName: 'Traceora',
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Traceora',
+    description: 'Zero-config full-stack runtime intelligence.',
+    creator: '@xuhaib_x9',
   },
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'dark',
+  themeColor: '#099268',
 }
 
 export default function RootLayout({
@@ -38,8 +34,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Traceora',
+    operatingSystem: 'Any',
+    applicationCategory: 'DeveloperApplication',
+    author: {
+      '@type': 'Person',
+      name: 'Zuhaib Rashid',
+      url: 'https://zuhaibrashid.com'
+    },
+    description: 'Zero-Config Full-Stack Runtime Intelligence for React and Express.',
+  };
+
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
