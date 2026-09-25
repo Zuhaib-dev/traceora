@@ -5,6 +5,9 @@ export type TraceEventType =
   | "COMPONENT_UNMOUNT"
   | "USER_INTERACTION"
   | "STATE_CHANGE"
+  | "NETWORK_REQUEST"
+  | "NETWORK_RESPONSE"
+  | "NETWORK_ERROR"
   | "ERROR";
 
 export interface TraceEvent {

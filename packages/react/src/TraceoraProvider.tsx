@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useMemo, useEffect } from "react";
-import { EventStore, EventEmitter } from "@traceora/core";
+import { EventStore, EventEmitter, setupNetworkInstrumentation } from "@traceora/core";
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
 
 export const TraceoraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const emitter = useMemo(() => {
     const store = new EventStore();
-    return new EventEmitter(store);
+    const em = new EventEmitter(store);
+    setupNetworkInstrumentation(em);
+    return em;
   }, []);
 
   useEffect(() => {

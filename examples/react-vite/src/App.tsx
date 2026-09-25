@@ -28,10 +28,14 @@ function App() {
             
             setCount((c) => c + 1);
             
-            // Simulate a network request grouped in the same trace
-            setTimeout(() => {
-              trace.emit({ type: "USER_INTERACTION", source: "API_RESPONSE_MOCK", metadata: { status: 200 } });
-            }, 500);
+            // Simulate a real network request grouped in the same trace!
+            // The global fetch has been instrumented by Traceora.
+            fetch("https://jsonplaceholder.typicode.com/todos/1")
+              .then(res => res.json())
+              .then(data => {
+                // Log when we finally process the data
+                trace.emit({ type: "STATE_CHANGE", source: "Process Data", metadata: { data } });
+              });
           }}
         >
           Count is {count}
