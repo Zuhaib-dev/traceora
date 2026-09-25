@@ -2,7 +2,11 @@
   "name": "@traceora/vite-plugin",
   "version": "0.1.0",
   "description": "Zero-config auto-tracking plugin for Traceora",
-  "author": "Zuhaib Rashid (https://zuhaibrashid.com)",
+  "author": {
+    "name": "Zuhaib Rashid",
+    "url": "https://zuhaibrashid.com",
+    "email": "hello@zuhaibrashid.com"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/zuhaib-dev/traceora.git",
@@ -36,5 +40,22 @@
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
-  }
+  },
+  "license": "MIT",
+  "keywords": [
+    "traceora",
+    "react",
+    "vite",
+    "telemetry",
+    "tracing",
+    "devtools",
+    "observability",
+    "performance",
+    "monitoring",
+    "error-tracking"
+  ],
+  "bugs": {
+    "url": "https://github.com/zuhaib-dev/traceora/issues"
+  },
+  "homepage": "https://github.com/zuhaib-dev/traceora#readme"
 }

@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://via.placeholder.com/150x150/1971c2/ffffff?text=Traceora" alt="Traceora Logo" width="120" height="120" style="border-radius: 20px;" />
+  <img src="https://via.placeholder.com/150x150/099268/ffffff?text=Traceora" alt="Traceora Logo" width="120" height="120" style="border-radius: 20px;" />
   
   <h1>Traceora</h1>
   <p><strong>Runtime Intelligence & Telemetry for Modern Applications</strong></p>
@@ -80,6 +80,16 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 ```
+
+## Tech Stack
+
+Traceora is built for performance and developer experience using modern web technologies:
+
+- **TypeScript**: 100% strictly typed codebase for maximum safety.
+- **React 18**: Deep lifecycle bindings and sleek DevTools UI.
+- **Vite & tsup**: Blazing fast ESM/CJS dual-format package bundling.
+- **Babel**: Advanced AST (Abstract Syntax Tree) parsing for zero-config auto-tracking.
+- **pnpm Workspaces**: Lightning-fast monorepo package management.
 
 ## Contributing
 
