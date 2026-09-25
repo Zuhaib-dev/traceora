@@ -9,6 +9,8 @@ export type TraceEventType =
   | "NETWORK_RESPONSE"
   | "NETWORK_ERROR"
   | "PERFORMANCE_WARNING"
+  | "CONSOLE_WARNING"
+  | "CONSOLE_ERROR"
   | "ERROR";
 
 export interface TraceEvent {

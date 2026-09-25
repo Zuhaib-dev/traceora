@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useEffect } from "react";
-import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation } from "@traceora/core";
+import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation, setupConsoleInstrumentation } from "@traceora/core";
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
 
@@ -9,6 +9,7 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const em = new EventEmitter(store);
     setupNetworkInstrumentation(em);
     setupErrorInstrumentation(em);
+    setupConsoleInstrumentation(em);
     new PerformanceMonitor(em); // Automatically starts listening
     return em;
   }, []);

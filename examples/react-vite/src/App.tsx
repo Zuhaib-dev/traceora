@@ -80,6 +80,24 @@ function App() {
         >
           Crash React
         </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#20c997', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            console.warn("This is a warning! Traceora intercepts this.");
+          }}
+        >
+          Console Warn
+        </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#ff6b6b', color: '#fff', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            console.error("This is a console error! Traceora intercepts this.");
+          }}
+        >
+          Console Error
+        </button>
       </div>
 
       <div style={{ marginTop: '2rem', padding: '1rem', background: '#f5f5f5', borderRadius: '8px' }}>
