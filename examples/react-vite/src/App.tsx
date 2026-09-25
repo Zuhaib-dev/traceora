@@ -19,6 +19,7 @@ function App() {
       
       <div style={{ margin: '2rem 0' }}>
         <button
+          style={{ padding: '10px 20px', fontSize: '1.2rem', cursor: 'pointer' }}
           onClick={() => {
             // Start a trace for this interaction
             const trace = startTrace("App.CounterButton_Click", { action: "increment", currentCount: count });
