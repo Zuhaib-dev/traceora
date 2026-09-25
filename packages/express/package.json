@@ -44,7 +44,15 @@
     "telemetry",
     "monitoring",
     "tracing",
-    "backend"
+    "backend",
+    "observability",
+    "logging",
+    "devtools",
+    "api"
   ],
+  "bugs": {
+    "url": "https://github.com/zuhaib-dev/traceora/issues"
+  },
+  "homepage": "https://github.com/zuhaib-dev/traceora#readme",
   "license": "MIT"
 }
