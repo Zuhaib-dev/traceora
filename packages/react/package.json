@@ -16,7 +16,8 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "logo.svg"
   ],
   "publishConfig": {
     "access": "public"

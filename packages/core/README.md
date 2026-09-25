@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/zuhaib-dev/traceora/main/apps/web/public/logo.svg" alt="Traceora Logo" width="100" height="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
+  <img src="./logo.svg" alt="Traceora Logo" width="100" height="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
 </div>
 
 # @traceora/core
