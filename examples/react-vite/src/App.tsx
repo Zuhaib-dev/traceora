@@ -27,7 +27,7 @@ function App() {
             
             // Simulate a real network request grouped in the same trace!
             // The global fetch has been instrumented by Traceora.
-            fetch("https://jsonplaceholder.typicode.com/todos/1")
+            fetch("http://localhost:4000/api/users")
               .then(res => res.json())
               .then(data => {
                 // Log when we finally process the data
@@ -53,12 +53,11 @@ function App() {
         <button
           style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#1971c2', color: '#fff', border: 'none', borderRadius: '4px' }}
           onClick={() => {
-            // Fire two identical requests instantly
-            fetch("https://jsonplaceholder.typicode.com/posts/1");
-            fetch("https://jsonplaceholder.typicode.com/posts/1");
+            // Fire API request that triggers backend errors
+            fetch("http://localhost:4000/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: 5000 }) });
           }}
         >
-          Duplicate API
+          Checkout API
         </button>
 
         <button

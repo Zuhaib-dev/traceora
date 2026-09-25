@@ -1,0 +1,50 @@
+{
+  "name": "@traceora/express",
+  "version": "0.1.2",
+  "description": "Express middleware for Traceora runtime intelligence",
+  "author": {
+    "name": "Zuhaib Rashid",
+    "url": "https://zuhaibrashid.com",
+    "email": "zuhaibrashid01@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zuhaib-dev/traceora.git",
+    "directory": "packages/express"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@traceora/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "express": "^4.19.2",
+    "tsup": "^8.0.2",
+    "typescript": "^5.4.3"
+  },
+  "peerDependencies": {
+    "express": "^4.0.0"
+  },
+  "keywords": [
+    "traceora",
+    "express",
+    "telemetry",
+    "monitoring",
+    "tracing",
+    "backend"
+  ],
+  "license": "MIT"
+}
