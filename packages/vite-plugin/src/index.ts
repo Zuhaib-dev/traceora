@@ -26,6 +26,7 @@ export function traceoraPlugin(): Plugin {
         filename: id,
         presets: ["@babel/preset-typescript"],
         plugins: [
+          "@babel/plugin-syntax-jsx",
           {
             visitor: {
               FunctionDeclaration(path) {
