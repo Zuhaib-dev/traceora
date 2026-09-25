@@ -27,8 +27,9 @@ export default function Icon() {
           color: '#099268',
         }}
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <svg width="24" height="24" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="256" height="256" rx="64" fill="#099268"/>
+          <path d="M192 160V96a16 16 0 0 0-8-13.86l-48-27.7a16 16 0 0 0-16 0l-48 27.7A16 16 0 0 0 64 96v64a16 16 0 0 0 8 13.86l48 27.7a16 16 0 0 0 16 0l48-27.7a16 16 0 0 0 8-13.86z" fill="#ffffff" stroke="#ffffff" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
       </div>
     ),
