@@ -1,11 +1,11 @@
 {
   "name": "@traceora/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Core event engine and runtime intelligence for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
     "url": "https://zuhaibrashid.com",
-    "email": "hello@zuhaibrashid.com"
+    "email": "zuhaibrashid01@gmail.com"
   },
   "repository": {
     "type": "git",
