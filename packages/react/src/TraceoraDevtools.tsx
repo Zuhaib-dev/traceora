@@ -160,10 +160,18 @@ export const TraceoraDevtools: React.FC = () => {
                   fontSize: "12px",
                   fontWeight: filter === f ? "bold" : "normal",
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
                   transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
                   boxShadow: filter === f ? "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2)" : "none"
                 }}
               >
+                {f === "ALL" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>}
+                {f === "RENDER" && <ActivityIcon />}
+                {f === "NETWORK" && <GlobeIcon />}
+                {f === "PERF" && <AlertIcon />}
+                {f === "ERROR" && <XCircleIcon />}
                 {f}
               </button>
             ))}
