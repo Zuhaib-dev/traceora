@@ -1,11 +1,8 @@
 import { useState } from 'react'
-import { useComponentTrace, useTrace, useTraceora, TraceoraDevtools } from '@traceora/react'
+import { useTrace, useTraceora, TraceoraDevtools } from '@traceora/react'
 import './App.css'
 
 function App() {
-  // Automatically trace Mount, Render, and Unmount
-  useComponentTrace("App");
-  
   // Get access to the trace starter
   const startTrace = useTrace();
   
