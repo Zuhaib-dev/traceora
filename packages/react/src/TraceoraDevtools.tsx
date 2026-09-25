@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { TraceEvent } from "@traceora/core";
 import { useTraceora } from "./TraceoraProvider";
 
+// --- Premium Icons ---
 const TraceoraIcon = () => (
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -15,6 +16,11 @@ const TrashIcon = () => (
   </svg>
 );
 
+const ActivityIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>;
+const GlobeIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
+const AlertIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
+const XCircleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+
 export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
   const [events, setEvents] = useState<TraceEvent[]>([]);
@@ -22,7 +28,6 @@ export const TraceoraDevtools: React.FC = () => {
   const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF">("ALL");
 
   useEffect(() => {
-    // Subscribe to new events instead of polling if possible, but for now we poll
     const interval = setInterval(() => {
       // @ts-ignore
       const allEvents = emitter['store'] ? emitter['store'].getAll() : [];
@@ -60,11 +65,17 @@ export const TraceoraDevtools: React.FC = () => {
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          boxShadow: "0 4px 20px rgba(9, 146, 104, 0.4)",
-          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          boxShadow: "0 8px 32px rgba(9, 146, 104, 0.4)",
+          transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease",
         }}
-        onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.05)"}
-        onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1)"}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.1) translateY(-2px)";
+          e.currentTarget.style.boxShadow = "0 12px 40px rgba(9, 146, 104, 0.6)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1) translateY(0)";
+          e.currentTarget.style.boxShadow = "0 8px 32px rgba(9, 146, 104, 0.4)";
+        }}
       >
         <TraceoraIcon />
       </button>
@@ -77,44 +88,65 @@ export const TraceoraDevtools: React.FC = () => {
       bottom: "0",
       left: "0",
       width: "100%",
-      height: "450px",
-      background: "#0f1115",
+      height: "500px",
+      background: "rgba(15, 17, 21, 0.85)", // Glassmorphism base
+      backdropFilter: "blur(16px)",          // Premium blur
+      WebkitBackdropFilter: "blur(16px)",
       color: "#e0e0e0",
-      borderTop: "2px solid #099268",
+      borderTop: "1px solid rgba(32, 201, 151, 0.3)",
+      boxShadow: "0 -10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
       display: "flex",
       flexDirection: "column",
       zIndex: 99999,
-      boxShadow: "0 -8px 30px rgba(0,0,0,0.5)",
       fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-      animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)"
+      animation: "slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1)"
     }}>
       <style>{`
         @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+          from { transform: translateY(100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes popIn {
+          from { transform: scale(0.98) translateY(5px); opacity: 0; }
+          to { transform: scale(1) translateY(0); opacity: 1; }
         }
         .traceora-scrollbar::-webkit-scrollbar { width: 8px; }
-        .traceora-scrollbar::-webkit-scrollbar-track { background: #0f1115; }
-        .traceora-scrollbar::-webkit-scrollbar-thumb { background: #2a2d35; border-radius: 4px; }
-        .traceora-scrollbar::-webkit-scrollbar-thumb:hover { background: #3c4049; }
+        .traceora-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .traceora-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+        .traceora-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(32, 201, 151, 0.3); }
+        .traceora-card {
+          transition: all 0.2s ease;
+        }
+        .traceora-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+          border-color: rgba(255,255,255,0.15) !important;
+        }
+        .traceora-json-block {
+          transition: all 0.2s ease;
+        }
+        .traceora-card:hover .traceora-json-block {
+          border-color: rgba(32, 201, 151, 0.2) !important;
+          background: rgba(15, 17, 21, 0.95) !important;
+        }
       `}</style>
       
       {/* HEADER */}
       <div style={{
-        padding: "12px 24px",
-        background: "#16181d",
-        borderBottom: "1px solid #2a2d35",
+        padding: "16px 24px",
+        background: "rgba(22, 24, 29, 0.6)",
+        borderBottom: "1px solid rgba(255,255,255,0.05)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center"
       }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ color: "#20c997", display: "flex", alignItems: "center" }}>
+          <div style={{ color: "#20c997", display: "flex", alignItems: "center", filter: "drop-shadow(0 0 8px rgba(32, 201, 151, 0.4))" }}>
             <TraceoraIcon />
           </div>
-          <strong style={{ fontSize: "15px", letterSpacing: "0.5px", color: "#fff" }}>TRACEORA</strong>
+          <strong style={{ fontSize: "16px", letterSpacing: "1px", color: "#fff", textShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>TRACEORA</strong>
           
-          <div style={{ display: "flex", gap: "4px", marginLeft: "24px", background: "#0f1115", padding: "4px", borderRadius: "6px", border: "1px solid #2a2d35" }}>
+          <div style={{ display: "flex", gap: "6px", marginLeft: "24px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
             {["ALL", "RENDER", "NETWORK", "PERF", "ERROR"].map((f) => (
               <button 
                 key={f}
@@ -123,12 +155,13 @@ export const TraceoraDevtools: React.FC = () => {
                   background: filter === f ? "rgba(32, 201, 151, 0.15)" : "transparent",
                   color: filter === f ? "#20c997" : "#888",
                   border: "none",
-                  borderRadius: "4px",
-                  padding: "4px 12px",
+                  borderRadius: "6px",
+                  padding: "6px 14px",
                   fontSize: "12px",
                   fontWeight: filter === f ? "bold" : "normal",
                   cursor: "pointer",
-                  transition: "all 0.15s ease"
+                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+                  boxShadow: filter === f ? "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2)" : "none"
                 }}
               >
                 {f}
@@ -137,20 +170,30 @@ export const TraceoraDevtools: React.FC = () => {
           </div>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <button 
             onClick={() => {
               // @ts-ignore
               if (emitter['store']) emitter['store'].events = [];
             }}
-            style={{ background: "transparent", border: "none", color: "#888", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px" }}
+            style={{ background: "transparent", border: "none", color: "#888", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", transition: "color 0.2s ease" }}
+            onMouseEnter={e => e.currentTarget.style.color = "#ff6b6b"}
+            onMouseLeave={e => e.currentTarget.style.color = "#888"}
             title="Clear Events"
           >
             <TrashIcon /> Clear
           </button>
           <button 
             onClick={() => setIsOpen(false)}
-            style={{ background: "transparent", border: "none", color: "#888", cursor: "pointer", fontSize: "20px", lineHeight: "1" }}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", justifyContent: "center", alignItems: "center", color: "#aaa", cursor: "pointer", fontSize: "18px", transition: "all 0.2s ease" }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.1)";
+              e.currentTarget.style.color = "#fff";
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+              e.currentTarget.style.color = "#aaa";
+            }}
           >
             ×
           </button>
@@ -163,67 +206,87 @@ export const TraceoraDevtools: React.FC = () => {
         style={{ 
           flex: 1, 
           overflowY: "auto", 
-          padding: "16px 24px",
-          overscrollBehavior: "contain", // PREVENTS SCROLLING THE PARENT APP
+          padding: "20px 24px",
+          overscrollBehavior: "contain",
         }}
-        onWheel={(e) => e.stopPropagation()} // EXTRA PROTECTION AGAINST PARENT SCROLL
+        onWheel={(e) => e.stopPropagation()}
       >
         {filteredEvents.length === 0 ? (
-          <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: "#555", flexDirection: "column", gap: "12px" }}>
-            <TraceoraIcon />
-            <p>Waiting for events...</p>
+          <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: "#555", flexDirection: "column", gap: "16px" }}>
+            <div style={{ opacity: 0.3, transform: "scale(1.5)" }}><TraceoraIcon /></div>
+            <p style={{ letterSpacing: "1px", fontSize: "14px" }}>Awaiting signals...</p>
           </div>
         ) : (
-          filteredEvents.map((ev) => (
-            <div key={ev.id} style={{
-              background: "#16181d",
-              border: "1px solid #2a2d35",
-              borderRadius: "8px",
-              padding: "14px",
-              marginBottom: "12px",
-              fontSize: "13px"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    background: ev.type.includes("ERROR") ? "#ff6b6b" 
-                               : ev.type.includes("WARNING") || ev.type.includes("PERF") ? "#fcc419"
-                               : ev.type.includes("NETWORK") ? "#339af0"
-                               : ev.type.includes("MOUNT") ? "#51cf66" 
-                               : "#ced4da"
-                  }} />
-                  <strong style={{ 
-                    color: ev.type.includes("ERROR") ? "#ff6b6b" : "#fff",
-                  }}>{ev.type}</strong>
-                </div>
-                <span style={{ color: "#666", fontSize: "12px" }}>
-                  {new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}
-                </span>
-              </div>
-              
-              <div style={{ color: "#888", marginBottom: "6px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ background: "#2a2d35", color: "#ccc", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
-                  {ev.source || "unknown"}
-                </span>
-                {ev.traceId && (
-                  <span style={{ background: "rgba(32, 201, 151, 0.1)", color: "#20c997", padding: "2px 8px", borderRadius: "4px", fontSize: "11px" }}>
-                    Trace: {ev.traceId}
+          filteredEvents.map((ev, index) => {
+            const isError = ev.type.includes("ERROR");
+            const isWarning = ev.type.includes("WARNING") || ev.type.includes("PERF");
+            const isNetwork = ev.type.includes("NETWORK");
+            const isRender = ev.type.includes("MOUNT") || ev.type.includes("RENDER");
+
+            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isRender ? "#51cf66" : "#ced4da";
+            const bgGradient = isError ? "linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, transparent 100%)" 
+                             : isWarning ? "linear-gradient(90deg, rgba(252, 196, 25, 0.05) 0%, transparent 100%)"
+                             : "rgba(255,255,255,0.02)";
+
+            return (
+              <div key={ev.id} className="traceora-card" style={{
+                background: bgGradient,
+                backgroundColor: "rgba(20, 22, 27, 0.7)",
+                border: "1px solid rgba(255,255,255,0.05)",
+                borderRadius: "10px",
+                padding: "16px",
+                marginBottom: "16px",
+                fontSize: "13px",
+                animation: `popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.03}s both`,
+                backdropFilter: "blur(4px)"
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{
+                      color: color,
+                      background: `rgba(${color === '#ff6b6b' ? '255,107,107' : color === '#fcc419' ? '252,196,25' : color === '#339af0' ? '51,154,240' : color === '#51cf66' ? '81,207,102' : '206,212,218'}, 0.15)`,
+                      padding: "6px",
+                      borderRadius: "6px",
+                      display: "flex"
+                    }}>
+                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : <ActivityIcon />}
+                    </div>
+                    <strong style={{ color, fontSize: "14px", letterSpacing: "0.5px" }}>{ev.type}</strong>
+                  </div>
+                  <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", fontFamily: "monospace" }}>
+                    {new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}
                   </span>
+                </div>
+                
+                <div style={{ color: "rgba(255,255,255,0.7)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                  <span style={{ background: "rgba(255,255,255,0.08)", color: "#eee", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: 500 }}>
+                    {ev.source || "unknown"}
+                  </span>
+                  {ev.traceId && (
+                    <span style={{ background: "rgba(32, 201, 151, 0.1)", color: "#20c997", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(32, 201, 151, 0.2)", display: "flex", alignItems: "center", gap: "4px" }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+                      {ev.traceId}
+                    </span>
+                  )}
+                </div>
+                
+                {ev.metadata && (
+                  <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)" }}>
+                    <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
+                      {JSON.stringify(ev.metadata, null, 2)}
+                    </pre>
+                  </div>
                 )}
               </div>
-              
-              {ev.metadata && (
-                <div style={{ marginTop: "12px", background: "#0f1115", borderRadius: "6px", padding: "10px", border: "1px solid #2a2d35" }}>
-                  <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
-                    {JSON.stringify(ev.metadata, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          ))
+            );
+          })
+        )}
+        
+        {/* SIGNATURE */}
+        {filteredEvents.length > 0 && (
+          <div style={{ textAlign: "center", padding: "24px 0 8px 0", color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "1px" }}>
+            CRAFTED WITH <span style={{ color: "#20c997" }}>💚</span> BY ZUHAIB RASHID
+          </div>
         )}
       </div>
     </div>
