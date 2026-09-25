@@ -1,21 +1,41 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useTraceora } from "./TraceoraProvider";
 
 /**
- * Automatically tracks the lifecycle (Mount, Render, Unmount) of a React component.
+ * Automatically tracks the lifecycle (Mount, Render, Unmount) and render duration of a React component.
  */
 export function useComponentTrace(componentName: string) {
   const emitter = useTraceora();
   const renderCount = useRef(0);
   const isFirstRender = useRef(true);
 
-  // Track Mount & Unmount
-  useEffect(() => {
-    emitter.emit({
-      type: "COMPONENT_MOUNT",
-      source: componentName,
-    });
+  // Capture start time during the render phase
+  const renderStartTime = performance.now();
 
+  useLayoutEffect(() => {
+    // Capture end time right after React mutates the DOM
+    const renderDuration = performance.now() - renderStartTime;
+    const durationMs = Math.round(renderDuration * 100) / 100;
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      emitter.emit({
+        type: "COMPONENT_MOUNT",
+        source: componentName,
+        metadata: { durationMs }
+      });
+    } else {
+      renderCount.current += 1;
+      emitter.emit({
+        type: "COMPONENT_RENDER",
+        source: componentName,
+        metadata: { renderCount: renderCount.current, durationMs },
+      });
+    }
+  }); // No dependencies = runs synchronously after every render
+
+  // Track Unmount
+  useEffect(() => {
     return () => {
       emitter.emit({
         type: "COMPONENT_UNMOUNT",
@@ -23,21 +43,6 @@ export function useComponentTrace(componentName: string) {
       });
     };
   }, [componentName, emitter]);
-
-  // Track Renders
-  useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return; // Skip the first render because the mount event covers it
-    }
-    
-    renderCount.current += 1;
-    emitter.emit({
-      type: "COMPONENT_RENDER",
-      source: componentName,
-      metadata: { renderCount: renderCount.current },
-    });
-  }); // No dependency array = runs on every render
 }
 
 /**
