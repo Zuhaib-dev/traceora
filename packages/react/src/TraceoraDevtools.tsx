@@ -22,6 +22,20 @@ const ActivityIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill=
 const GlobeIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
 const AlertIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
 const XCircleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+const CodeIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>;
+
+function parseFileFromStackTrace(errorString?: string): string | null {
+  if (!errorString) return null;
+  const lines = errorString.split('\n');
+  for (const line of lines) {
+    if (line.includes('node_modules') || line.includes('react-dom') || line.includes('installHook.js')) continue;
+    const match = line.match(/(https?:\/\/[^\/]+\/)([^?)]+)(?:\?[^:]*)?:(\d+):(\d+)/);
+    if (match) {
+      return `${match[2]}:${match[3]}:${match[4]}`;
+    }
+  }
+  return null;
+}
 
 export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
@@ -278,6 +292,31 @@ export const TraceoraDevtools: React.FC = () => {
                       {ev.traceId}
                     </span>
                   )}
+                  {(() => {
+                    if (!isError || !ev.metadata || !ev.metadata.error) return null;
+                    const errorStr = typeof ev.metadata.error === 'string' ? ev.metadata.error : JSON.stringify(ev.metadata.error);
+                    const fileAndLine = parseFileFromStackTrace(errorStr);
+                    if (!fileAndLine) return null;
+                    return (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fetch(`/__open-in-editor?file=${encodeURIComponent(fileAndLine)}`);
+                        }}
+                        style={{
+                          background: "rgba(32, 201, 151, 0.1)", color: "#20c997", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(32, 201, 151, 0.2)", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", transition: "all 0.2s ease"
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = "rgba(32, 201, 151, 0.2)";
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = "rgba(32, 201, 151, 0.1)";
+                        }}
+                      >
+                        <CodeIcon /> Open in Editor
+                      </button>
+                    );
+                  })()}
                 </div>
                 
                 {ev.metadata && (
