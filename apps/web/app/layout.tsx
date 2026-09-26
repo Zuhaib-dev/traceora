@@ -16,12 +16,21 @@ export const metadata: Metadata = {
     siteName: 'Traceora',
     locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: '/og.jpg',
+        width: 1920,
+        height: 1080,
+        alt: 'Traceora — Zero-Config Full-Stack Runtime Intelligence',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Traceora',
+    title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
     description: 'Zero-config full-stack runtime intelligence.',
     creator: '@xuhaib_x9',
+    images: ['/og.jpg'],
   },
   verification: {
     google: 'terZRkP5xAisMxUTVWZ_rW6MXSuOeuAFITryD0CBDxA',
