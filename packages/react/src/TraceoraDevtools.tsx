@@ -1,31 +1,62 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { TraceEvent } from "@traceora/core";
-import { useTraceora } from "./TraceoraProvider";
+import React, { useEffect, useState, useMemo } from 'react';
+import { TraceEvent } from '@traceora/core';
+import { useTraceora } from './TraceoraProvider';
+import * as LucideIcons from 'lucide-react';
 
-// --- Premium Icons ---
-const TraceoraIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M22 12h-4l-3 9L9 3l-3 9H2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
-);
+const Activity = LucideIcons.Activity as any;
+const ChevronDown = LucideIcons.ChevronDown as any;
+const CircleAlert = LucideIcons.CircleAlert as any;
+const Clock3 = LucideIcons.Clock3 as any;
+const Database = LucideIcons.Database as any;
+const Globe2 = LucideIcons.Globe2 as any;
+const Layers3 = LucideIcons.Layers3 as any;
+const Network = LucideIcons.Network as any;
+const Server = LucideIcons.Server as any;
+const Trash2 = LucideIcons.Trash2 as any;
+const X = LucideIcons.X as any;
 
-const TrashIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"></polyline>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-  </svg>
-);
+const filters = ['All', 'Renders', 'Network', 'Database', 'Errors'] as const;
 
-const ActivityIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>;
-const GlobeIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>;
-const AlertIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
-const XCircleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
+function LogoMark() {
+  return (
+    <div className="traceora-mark" aria-hidden="true">
+      <svg viewBox="0 0 34 38" fill="none">
+        <path d="M17 1.8 31.2 10v18L17 36.2 2.8 28V10L17 1.8Z" stroke="currentColor" strokeWidth="1.8" />
+        <path d="m11.2 15.1 5.8-3.35 5.8 3.35v7.8l-5.8 3.35-5.8-3.35v-7.8Z" fill="currentColor" opacity=".23" />
+        <path d="m17 11.8 5.8 3.3-5.8 3.4-5.8-3.4 5.8-3.3Zm0 6.7v7.75" stroke="currentColor" strokeWidth="1.4" />
+      </svg>
+    </div>
+  );
+}
+
+function SyntaxJson({ detail }: { detail: string }) {
+  const tokens = useMemo(() => detail.split(/("[^"]+"|\b\d+(?:\.\d+)?\b|\b(?:true|false|null)\b)/g), [detail]);
+  return (
+    <pre className="traceora-json" aria-label="Event metadata">
+      {tokens.map((token, index) => {
+        const isString = token.startsWith('"');
+        const isNumber = /^\d/.test(token);
+        const isBoolean = /^(true|false|null)$/.test(token);
+        return (
+          <span 
+            key={`${token}-${index}`} 
+            className={isString ? 'json-string' : isNumber ? 'json-number' : isBoolean ? 'json-boolean' : 'json-punctuation'}
+          >
+            {token}
+          </span>
+        );
+      })}
+    </pre>
+  );
+}
 
 export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
   const [events, setEvents] = useState<TraceEvent[]>([]);
-  const [isOpen, setIsOpen] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF">("ALL");
+  const [filter, setFilter] = useState<(typeof filters)[number]>('All');
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [visible, setVisible] = useState(false);
+  const [cleared, setCleared] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -37,266 +68,306 @@ export const TraceoraDevtools: React.FC = () => {
   }, [emitter]);
 
   const filteredEvents = useMemo(() => {
+    if (cleared) return [];
     const reversed = events.slice().reverse();
-    if (filter === "ALL") return reversed;
-    if (filter === "RENDER") return reversed.filter(e => e.type.includes("MOUNT") || e.type.includes("RENDER"));
-    if (filter === "NETWORK") return reversed.filter(e => e.type.includes("NETWORK"));
-    if (filter === "ERROR") return reversed.filter(e => e.type.includes("ERROR"));
-    if (filter === "PERF") return reversed.filter(e => e.type === "PERFORMANCE_WARNING");
+    if (filter === 'All') return reversed;
+    if (filter === 'Renders') return reversed.filter(e => e.type.includes('MOUNT') || e.type.includes('RENDER') || e.type.includes('UPDATE'));
+    if (filter === 'Network') return reversed.filter(e => e.type.includes('NETWORK') || e.type.includes('FETCH'));
+    if (filter === 'Database') return reversed.filter(e => e.type.includes('QUERY') || e.type.includes('DB'));
+    if (filter === 'Errors') return reversed.filter(e => e.type.includes('ERROR') || e.type.includes('WARN'));
     return reversed;
-  }, [events, filter]);
+  }, [events, filter, cleared]);
 
-  if (!isOpen) {
+  if (!visible) {
     return (
-      <button 
-        onClick={() => setIsOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: "24px",
-          left: "24px",
-          width: "56px",
-          height: "56px",
-          background: "linear-gradient(135deg, #2b8a3e, #099268)",
-          color: "#fff",
-          border: "none",
-          borderRadius: "50%",
-          cursor: "pointer",
-          zIndex: 99999,
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          boxShadow: "0 8px 32px rgba(9, 146, 104, 0.4)",
-          transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.1) translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 12px 40px rgba(9, 146, 104, 0.6)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1) translateY(0)";
-          e.currentTarget.style.boxShadow = "0 8px 32px rgba(9, 146, 104, 0.4)";
-        }}
-      >
-        <TraceoraIcon />
+      <button className="traceora-reopen" onClick={() => setVisible(true)} aria-label="Open Traceora">
+        <LogoMark />
+        <style>{`
+          .traceora-reopen {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #1b201f, #151918);
+            border: 1px solid #343c39;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 999999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+          }
+          .traceora-reopen:hover {
+            transform: scale(1.1) translateY(-2px);
+            border-color: #59685e;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+          }
+          .traceora-reopen .traceora-mark {
+            width: 28px;
+            height: 28px;
+          }
+        `}</style>
       </button>
     );
   }
 
   return (
-    <div style={{
-      position: "fixed",
-      bottom: "0",
-      left: "0",
-      width: "100%",
-      height: "500px",
-      background: "rgba(15, 17, 21, 0.85)", // Glassmorphism base
-      backdropFilter: "blur(16px)",          // Premium blur
-      WebkitBackdropFilter: "blur(16px)",
-      color: "#e0e0e0",
-      borderTop: "1px solid rgba(32, 201, 151, 0.3)",
-      boxShadow: "0 -10px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)",
-      display: "flex",
-      flexDirection: "column",
-      zIndex: 99999,
-      fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-      animation: "slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1)"
-    }}>
+    <section className="traceora-panel-container" aria-label="Traceora React DevTools">
       <style>{`
+        /* CSS Injected for Traceora DevTools */
+        .traceora-panel-container {
+          position: fixed;
+          bottom: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 999999;
+          font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+          color: #d7dcda;
+          animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
         @keyframes slideUp {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from { transform: translate(-50%, 100%); opacity: 0; }
+          to { transform: translate(-50%, 0); opacity: 1; }
         }
-        @keyframes popIn {
-          from { transform: scale(0.98) translateY(5px); opacity: 0; }
-          to { transform: scale(1) translateY(0); opacity: 1; }
+        
+        .traceora-panel { 
+          width: min(1110px, 95vw); 
+          height: min(782px, calc(100vh - 56px)); 
+          min-height: 540px; 
+          display: flex; 
+          flex-direction: column; 
+          position: relative; 
+          overflow: hidden; 
+          border: 1px solid #3a413f; 
+          border-radius: 8px; 
+          background: rgb(10 15 18 / 0.95); 
+          backdrop-filter: blur(28px) saturate(125%); 
+          -webkit-backdrop-filter: blur(28px) saturate(125%);
+          box-shadow: 0 24px 60px #0009, 0 1px 0 #ffffff0b inset; 
         }
-        .traceora-scrollbar::-webkit-scrollbar { width: 8px; }
-        .traceora-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .traceora-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-        .traceora-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(32, 201, 151, 0.3); }
-        .traceora-card {
-          transition: all 0.2s ease;
+        .traceora-panel * {
+          box-sizing: border-box;
         }
-        .traceora-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-          border-color: rgba(255,255,255,0.15) !important;
-        }
-        .traceora-json-block {
-          transition: all 0.2s ease;
-        }
-        .traceora-card:hover .traceora-json-block {
-          border-color: rgba(32, 201, 151, 0.2) !important;
-          background: rgba(15, 17, 21, 0.95) !important;
-        }
+        .traceora-header { min-height: 68px; padding: 0 20px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; border-bottom: 1px solid #303735; background: #1a1e1d; }
+        .traceora-brand { display: flex; align-items: center; gap: 11px; }
+        .traceora-mark { width: 23px; height: 25px; display: grid; place-items: center; position: relative; clip-path: polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%); background: #7aca91; }
+        .traceora-mark:before { content: ''; position: absolute; inset: 2px; clip-path: inherit; background: #1a1e1d; }
+        .traceora-mark svg { width: 14px; height: 14px; position: relative; color: #a8e4b2; }
+        .traceora-name { color: #edf1ee; font-size: 14px; font-weight: 700; letter-spacing: -.02em; line-height: 1; }
+        .traceora-subtitle { margin-top: 5px; color: #78827e; font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: .08em; display: flex; align-items: center; }
+        .traceora-live-dot { display: inline-block; width: 5px; height: 5px; margin-right: 5px; border-radius: 50%; background: #83cc92; }
+        
+        .traceora-filters { display: flex; gap: 1px; padding: 3px; border: 1px solid #343b38; border-radius: 4px; background: #111514; }
+        .traceora-filter { height: 28px; padding: 0 13px; border: 0; border-radius: 2px; color: #89918e; background: transparent; cursor: pointer; font-size: 10px; font-weight: 600; transition: background .15s, color .15s; display: flex; align-items: center; }
+        .traceora-filter:hover { color: #d7ded9; background: #242a28; }
+        .traceora-filter.active { color: #dff2e0; background: #365b42; box-shadow: 0 0 0 1px #5a8960 inset; }
+        .traceora-count { display: inline-grid; place-items: center; min-width: 16px; height: 15px; margin-left: 5px; border-radius: 2px; color: #b8e5bc; background: #466d4d; font-family: 'IBM Plex Mono', monospace; font-size: 9px; }
+        
+        .traceora-actions { display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+        .traceora-action { display: inline-flex; align-items: center; justify-content: center; border: 1px solid transparent; color: #89928e; background: transparent; cursor: pointer; transition: .15s; width: 28px; height: 28px; border-radius: 3px; }
+        .traceora-action svg { width: 14px; height: 14px; }
+        .traceora-action:hover { color: #e4eae6; border-color: #46504b; background: #2a302e; }
+        .traceora-action-text { gap: 6px; padding: 7px 8px; width: auto; font-size: 10px; font-weight: 600; }
+        .traceora-action-text:hover { color: #e3a2a0; background: #3a2728; border-color: transparent; }
+        .traceora-divider { width: 1px; height: 12px; margin: 0 3px; background: #343b38; }
+        
+        .traceora-toolbar { min-height: 40px; padding: 0 21px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #292f2d; color: #818b87; background: #171b1a; font: 10px 'IBM Plex Mono', monospace; }
+        .traceora-stream { display: flex; align-items: center; gap: 8px; }
+        .traceora-stream-dot { width: 6px; height: 6px; border-radius: 50%; background: #83cc92; box-shadow: 0 0 0 3px #83cc921c; animation: live-pulse 1.8s ease-out infinite; }
+        .traceora-event-count { display: flex; align-items: center; gap: 7px; color: #7e8984; }
+        .traceora-event-count svg { width: 12px; height: 12px; }
+        
+        .traceora-timeline { flex: 1; overflow-y: auto; padding: 17px 21px 10px; scrollbar-width: thin; scrollbar-color: #4a5b50 transparent; }
+        .traceora-timeline::-webkit-scrollbar { width: 8px; }
+        .traceora-timeline::-webkit-scrollbar-track { background: transparent; }
+        .traceora-timeline::-webkit-scrollbar-thumb { background: #4a5b50; border-radius: 4px; }
+        
+        .traceora-event { display: grid; grid-template-columns: 34px minmax(0, 1fr); animation: event-in .25s ease both; animation-delay: var(--event-delay); position: relative; margin-bottom: 12px; }
+        @keyframes event-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+        
+        .traceora-event-rail { display: flex; position: relative; flex-direction: column; align-items: center; }
+        .traceora-event-icon { width: 25px; height: 25px; display: grid; place-items: center; position: relative; z-index: 1; border: 1px solid #668d69; border-radius: 4px; color: #9bd9a1; background: #203425; }
+        .traceora-event-icon svg { width: 13px; height: 13px; }
+        .traceora-event.network .traceora-event-icon { color: #9fc0cc; border-color: #587887; background: #1e2d33; }
+        .traceora-event.database .traceora-event-icon { color: #c3b0d3; border-color: #786789; background: #2b2634; }
+        .traceora-event.error .traceora-event-icon { color: #dfa19d; border-color: #895c5c; background: #342426; }
+        
+        .traceora-rail-line { width: 1px; flex: 1; min-height: 22px; background: linear-gradient(180deg, #20c997, #315a50 55%, transparent); box-shadow: 0 0 7px #20c99755; margin-top: 4px; }
+        
+        .traceora-event-body { min-width: 0; margin: 0 0 8px 10px; border: 1px solid #343c39; border-radius: 4px; background: #1b201f; transition: border-color .15s, background .15s; }
+        .traceora-event-body:hover { border-color: #59685e; background: #202624; }
+        .traceora-event.warning .traceora-event-body { border-color: #8a651f; box-shadow: inset 2px 0 #faad14, 0 0 22px #faad1412; }
+        .traceora-event.error .traceora-event-body { border-color: #87383c; box-shadow: inset 2px 0 #ff4d4f, 0 0 22px #ff4d4f12; }
+        
+        .traceora-event-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 11px 14px; width: 100%; border: none; background: transparent; cursor: pointer; text-align: left; }
+        .traceora-event-title { display: flex; align-items: center; min-width: 0; gap: 8px; }
+        .traceora-type { padding: 3px 5px; border-radius: 2px; color: #a8d9ac; background: #2d5035; font: 500 8px 'IBM Plex Mono', monospace; font-style: normal; text-transform: uppercase; }
+        .traceora-event.network .traceora-type { color: #aed0d8; background: #29434b; }
+        .traceora-event.database .traceora-type { color: #d0c0dd; background: #42374e; }
+        .traceora-event.error .traceora-type { color: #e5b0ab; background: #523334; }
+        
+        .traceora-event-title strong { overflow: hidden; color: #e0e6e2; font: 500 11px 'IBM Plex Mono', monospace; letter-spacing: .025em; text-overflow: ellipsis; white-space: nowrap; }
+        .traceora-event-time { display: flex; align-items: center; gap: 8px; color: #76817c; font: 10px 'IBM Plex Mono', monospace; }
+        .traceora-event-time svg { width: 12px; height: 12px; transition: transform 0.2s ease; }
+        .traceora-event-time svg.rotated { transform: rotate(180deg); }
+        
+        .waterfall { display: inline-flex; align-items: center; gap: 8px; min-width: 150px; justify-content: flex-end; }
+        .waterfall-track { width: 86px; height: 5px; overflow: hidden; border-radius: 99px; background: #293532; box-shadow: inset 0 1px #ffffff0a; }
+        .waterfall-fill { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #1b8e70, #20c997); box-shadow: 0 0 8px #20c99788; }
+        .traceora-event.network .waterfall-fill { background: linear-gradient(90deg, #3d8191, #7fc9c4); box-shadow: 0 0 8px #7fc9c477; }
+        .traceora-event.database .waterfall-fill { background: linear-gradient(90deg, #775a9c, #b493d1); box-shadow: 0 0 8px #b493d177; }
+        .traceora-event.error .waterfall-fill { background: linear-gradient(90deg, #9f3d44, #ff4d4f); box-shadow: 0 0 8px #ff4d4f77; }
+        .waterfall b { width: 38px; color: #788681; text-align: right; font: 500 9px 'IBM Plex Mono', monospace; }
+        
+        .traceora-json-wrap { margin: 0 14px 10px; border-top: 1px solid #29322f; padding-top: 10px; }
+        .traceora-json { margin: 0; padding: 9px 11px; border: 1px solid #29322f; border-left-color: #20c99766; border-radius: 3px; color: #9ea9a4; background: #08100eaa; font: 10px/1.65 'IBM Plex Mono', monospace; overflow-x: auto; }
+        .json-string { color: #e7b76b; }
+        .json-number { color: #b993e8; }
+        .json-boolean { color: #b993e8; }
+        .json-punctuation { color: #63d6e5; }
+        
+        .traceora-empty { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: #77827d; }
+        .traceora-empty svg { width: 28px; height: 28px; margin-bottom: 5px; color: #83cc92; }
+        .traceora-empty strong { color: #d5ddd8; font-size: 13px; }
+        .traceora-empty span { font-size: 11px; }
+        .traceora-empty button { margin-top: 8px; padding: 7px 11px; border: 1px solid #608866; border-radius: 3px; color: #b8ddb9; background: #233b28; cursor: pointer; font-size: 10px; }
+        
+        .traceora-footer { min-height: 36px; padding: 0 21px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #292f2d; color: #65716c; font: 9px 'IBM Plex Mono', monospace; }
+        .traceora-footer span { display: flex; align-items: center; gap: 6px; }
+        .traceora-heart { color: #20c997; font-size: 11px; }
+        
+        @keyframes live-pulse { 0%, 100% { box-shadow: 0 0 0 3px #20c99720; } 50% { box-shadow: 0 0 0 6px #20c99700; } }
       `}</style>
-      
-      {/* HEADER */}
-      <div style={{
-        padding: "16px 24px",
-        background: "rgba(22, 24, 29, 0.6)",
-        borderBottom: "1px solid rgba(255,255,255,0.05)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center"
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ color: "#20c997", display: "flex", alignItems: "center", filter: "drop-shadow(0 0 8px rgba(32, 201, 151, 0.4))" }}>
-            <TraceoraIcon />
+
+      <div className="traceora-panel">
+        <header className="traceora-header">
+          <div className="traceora-brand">
+            <LogoMark />
+            <div>
+              <div className="traceora-name">Traceora</div>
+              <div className="traceora-subtitle"><span className="traceora-live-dot" />DEVTOOLS</div>
+            </div>
           </div>
-          <strong style={{ fontSize: "16px", letterSpacing: "1px", color: "#fff", textShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>TRACEORA</strong>
-          
-          <div style={{ display: "flex", gap: "6px", marginLeft: "24px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
-            {["ALL", "RENDER", "NETWORK", "PERF", "ERROR"].map((f) => (
+          <nav className="traceora-filters" aria-label="Filter events">
+            {filters.map((item) => (
               <button 
-                key={f}
-                onClick={() => setFilter(f as any)}
-                style={{
-                  background: filter === f ? "rgba(32, 201, 151, 0.15)" : "transparent",
-                  color: filter === f ? "#20c997" : "#888",
-                  border: "none",
-                  borderRadius: "6px",
-                  padding: "6px 14px",
-                  fontSize: "12px",
-                  fontWeight: filter === f ? "bold" : "normal",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
-                  boxShadow: filter === f ? "inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2)" : "none"
-                }}
+                key={item} 
+                className={filter === item ? 'traceora-filter active' : 'traceora-filter'} 
+                onClick={() => setFilter(item)}
               >
-                {f === "ALL" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>}
-                {f === "RENDER" && <ActivityIcon />}
-                {f === "NETWORK" && <GlobeIcon />}
-                {f === "PERF" && <AlertIcon />}
-                {f === "ERROR" && <XCircleIcon />}
-                {f}
+                {item}
+                {item === 'All' && <span className="traceora-count">{events.length}</span>}
               </button>
             ))}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-          <button 
-            onClick={() => {
+          </nav>
+          <div className="traceora-actions">
+            <button className="traceora-action traceora-action-text" onClick={() => {
               // @ts-ignore
               if (emitter['store']) emitter['store'].events = [];
-            }}
-            style={{ background: "transparent", border: "none", color: "#888", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", transition: "color 0.2s ease" }}
-            onMouseEnter={e => e.currentTarget.style.color = "#ff6b6b"}
-            onMouseLeave={e => e.currentTarget.style.color = "#888"}
-            title="Clear Events"
-          >
-            <TrashIcon /> Clear
-          </button>
-          <button 
-            onClick={() => setIsOpen(false)}
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "50%", width: "32px", height: "32px", display: "flex", justifyContent: "center", alignItems: "center", color: "#aaa", cursor: "pointer", fontSize: "18px", transition: "all 0.2s ease" }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.1)";
-              e.currentTarget.style.color = "#fff";
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-              e.currentTarget.style.color = "#aaa";
-            }}
-          >
-            ×
-          </button>
+              setCleared(true);
+            }} aria-label="Clear events" title="Clear events">
+              <Trash2 /> Clear
+            </button>
+            <span className="traceora-divider" />
+            <button className="traceora-action close" onClick={() => setVisible(false)} aria-label="Close Traceora" title="Close">
+              <X />
+            </button>
+          </div>
+        </header>
+
+        <div className="traceora-toolbar">
+          <div className="traceora-stream">
+            <span className="traceora-stream-dot" /> Listening for events
+          </div>
+          <div className="traceora-event-count">
+            {cleared ? 0 : filteredEvents.length} events <Clock3 />
+          </div>
         </div>
-      </div>
 
-      {/* EVENT LIST */}
-      <div 
-        className="traceora-scrollbar"
-        style={{ 
-          flex: 1, 
-          overflowY: "auto", 
-          padding: "20px 24px",
-          overscrollBehavior: "contain",
-        }}
-        onWheel={(e) => e.stopPropagation()}
-      >
-        {filteredEvents.length === 0 ? (
-          <div style={{ display: "flex", height: "100%", alignItems: "center", justifyContent: "center", color: "#555", flexDirection: "column", gap: "16px" }}>
-            <div style={{ opacity: 0.3, transform: "scale(1.5)" }}><TraceoraIcon /></div>
-            <p style={{ letterSpacing: "1px", fontSize: "14px" }}>Awaiting signals...</p>
-          </div>
-        ) : (
-          filteredEvents.map((ev, index) => {
-            const isError = ev.type.includes("ERROR");
-            const isWarning = ev.type.includes("WARNING") || ev.type.includes("PERF");
-            const isNetwork = ev.type.includes("NETWORK");
-            const isRender = ev.type.includes("MOUNT") || ev.type.includes("RENDER");
+        <div className="traceora-timeline">
+          {cleared || filteredEvents.length === 0 ? (
+            <div className="traceora-empty">
+              <Server />
+              <strong>{cleared ? 'Stream cleared' : 'Awaiting signals...'}</strong>
+              <span>New runtime events will appear here.</span>
+              {cleared && <button onClick={() => setCleared(false)}>Listening for new events</button>}
+            </div>
+          ) : (
+            filteredEvents.map((event, index) => {
+              const isError = event.type.includes('ERROR');
+              const isWarning = event.type.includes('WARN') || event.type.includes('PERF');
+              const isNetwork = event.type.includes('NETWORK') || event.type.includes('FETCH');
+              const isDatabase = event.type.includes('QUERY') || event.type.includes('DB') || event.type.includes('DATABASE');
+              
+              const accent = isError ? 'error' : isWarning ? 'warning' : isNetwork ? 'network' : isDatabase ? 'database' : 'render';
+              const Icon = isError ? CircleAlert : isWarning ? CircleAlert : isNetwork ? Globe2 : isDatabase ? Database : Activity;
+              
+              // Calculate a fake duration for the waterfall if not present
+              const durationStr = typeof event.metadata?.duration === 'number' 
+                ? `${event.metadata.duration}ms` 
+                : typeof event.metadata?.time === 'number'
+                ? `${event.metadata.time}ms`
+                : isNetwork ? '84ms' : isDatabase ? '24ms' : '4ms';
+              
+              const durationMs = parseInt(durationStr);
+              const fillWidth = Math.min(100, Math.max(5, (durationMs / 200) * 100)); // Max out at 200ms
 
-            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isRender ? "#51cf66" : "#ced4da";
-            const bgGradient = isError ? "linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, transparent 100%)" 
-                             : isWarning ? "linear-gradient(90deg, rgba(252, 196, 25, 0.05) 0%, transparent 100%)"
-                             : "rgba(255,255,255,0.02)";
-
-            return (
-              <div key={ev.id} className="traceora-card" style={{
-                background: bgGradient,
-                backgroundColor: "rgba(20, 22, 27, 0.7)",
-                border: "1px solid rgba(255,255,255,0.05)",
-                borderRadius: "10px",
-                padding: "16px",
-                marginBottom: "16px",
-                fontSize: "13px",
-                animation: `popIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) ${index * 0.03}s both`,
-                backdropFilter: "blur(4px)"
-              }}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{
-                      color: color,
-                      background: `rgba(${color === '#ff6b6b' ? '255,107,107' : color === '#fcc419' ? '252,196,25' : color === '#339af0' ? '51,154,240' : color === '#51cf66' ? '81,207,102' : '206,212,218'}, 0.15)`,
-                      padding: "6px",
-                      borderRadius: "6px",
-                      display: "flex"
-                    }}>
-                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : <ActivityIcon />}
-                    </div>
-                    <strong style={{ color, fontSize: "14px", letterSpacing: "0.5px" }}>{ev.type}</strong>
+              return (
+                <article 
+                  className={`traceora-event ${accent}`} 
+                  key={event.id} 
+                  style={{ '--event-delay': `${Math.min(index * 25, 500)}ms` } as React.CSSProperties}
+                >
+                  <div className="traceora-event-rail">
+                    <div className="traceora-event-icon"><Icon /></div>
+                    {index !== filteredEvents.length - 1 && <div className="traceora-rail-line" />}
                   </div>
-                  <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", fontFamily: "monospace" }}>
-                    {new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}
-                  </span>
-                </div>
-                
-                <div style={{ color: "rgba(255,255,255,0.7)", marginBottom: "12px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
-                  <span style={{ background: "rgba(255,255,255,0.08)", color: "#eee", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", fontWeight: 500 }}>
-                    {ev.source || "unknown"}
-                  </span>
-                  {ev.traceId && (
-                    <span style={{ background: "rgba(32, 201, 151, 0.1)", color: "#20c997", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(32, 201, 151, 0.2)", display: "flex", alignItems: "center", gap: "4px" }}>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
-                      {ev.traceId}
-                    </span>
-                  )}
-                </div>
-                
-                {ev.metadata && (
-                  <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)" }}>
-                    <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
-                      {JSON.stringify(ev.metadata, null, 2)}
-                    </pre>
+                  <div className="traceora-event-body">
+                    <button 
+                      className="traceora-event-head" 
+                      onClick={() => setExpanded(expanded === event.id ? null : event.id)} 
+                      aria-expanded={expanded === event.id}
+                    >
+                      <span className="traceora-event-title">
+                        <span className="traceora-type">{isError ? 'ERROR' : isWarning ? 'WARN' : isNetwork ? 'NETWORK' : isDatabase ? 'DATABASE' : 'RENDER'}</span>
+                        <strong>{event.type}</strong>
+                      </span>
+                      <span className="traceora-event-time">
+                        <span className="waterfall">
+                          <span className="waterfall-track">
+                            <span className="waterfall-fill" style={{ width: `${fillWidth}%` }} />
+                          </span>
+                          <b>{durationStr}</b>
+                        </span>
+                        {new Date(event.timestamp).toISOString().split('T')[1].slice(0, -1)}
+                        <ChevronDown className={expanded === event.id ? 'rotated' : ''} />
+                      </span>
+                    </button>
+                    {expanded === event.id && (
+                      <div className="traceora-json-wrap">
+                        <SyntaxJson detail={JSON.stringify({
+                          id: event.id,
+                          traceId: event.traceId,
+                          source: event.source,
+                          ...event.metadata
+                        }, null, 2)} />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            );
-          })
-        )}
-        
-        {/* SIGNATURE */}
-        {filteredEvents.length > 0 && (
-          <div style={{ textAlign: "center", padding: "24px 0 8px 0", color: "rgba(255,255,255,0.3)", fontSize: "11px", letterSpacing: "1px" }}>
-            CRAFTED WITH <span style={{ color: "#20c997" }}>💚</span> BY ZUHAIB RASHID
-          </div>
-        )}
+                </article>
+              );
+            })
+          )}
+        </div>
+
+        <footer className="traceora-footer">
+          <span>LOCAL SESSION • PORT 3000</span>
+          <span>Crafted with <span className="traceora-heart">♥</span> by Zuhaib Rashid</span>
+        </footer>
       </div>
-    </div>
+    </section>
   );
 };
