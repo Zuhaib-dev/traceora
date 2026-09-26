@@ -20,7 +20,7 @@ npm install @traceora/react @traceora/core
 
 ## Features
 
-- `<TraceoraProvider>`: Initializes the core engine, instruments `fetch`, catches global errors, and makes the `EventEmitter` available via React Context.
+- `<TraceoraProvider>`: Initializes the core engine, instruments `fetch` and `XMLHttpRequest`, intercepts the History API (router tracking), catches global errors, and makes the `EventEmitter` available via React Context.
 - `<TraceoraErrorBoundary>`: A robust error boundary that intercepts React render crashes and logs them to the Traceora timeline before showing a fallback UI.
 - `<TraceoraDevtools />`: A floating, real-time visual timeline that you can drop into your app during development.
 - `useTrace()`: A manual hook to trace specific interactions (like complex button clicks).

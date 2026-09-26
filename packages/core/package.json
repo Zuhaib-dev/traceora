@@ -1,6 +1,6 @@
 {
   "name": "@traceora/core",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Core event engine and runtime intelligence for Traceora",
   "author": {
     "name": "Zuhaib Rashid",

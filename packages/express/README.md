@@ -64,6 +64,26 @@ app.get("/api/users", async (req, res) => {
 app.listen(4000);
 ```
 
+### Database Auto-Tracking (Prisma & Mongoose)
+
+Traceora can automatically capture every database query (including filters, arguments, and exact execution duration) and stream them to your frontend timeline without manually emitting events.
+
+#### Prisma
+```typescript
+import { PrismaClient } from "@prisma/client";
+import { traceoraPrismaExtension } from "@traceora/express";
+
+const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
+```
+
+#### Mongoose
+```typescript
+import mongoose from "mongoose";
+import { traceoraMongoosePlugin } from "@traceora/express";
+
+mongoose.plugin(traceoraMongoosePlugin);
+```
+
 ## How it Works
 
 1. Your React frontend (using `@traceora/react`) automatically injects `X-Traceora-TraceId` into every `fetch()` request.

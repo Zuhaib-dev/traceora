@@ -20,7 +20,8 @@ npm install @traceora/core
 
 - **Event Bus (`EventEmitter`)**: A publish-subscribe pattern that decoupled event generation from storage.
 - **Trace Context (`TraceID`)**: Correlates events that belong to the same logical interaction (e.g. A user clicks a button, which triggers a network request).
-- **Network Interception**: Automatically wraps `window.fetch` to capture request/response data and detect duplicate requests.
+- **Network Interception**: Automatically wraps `window.fetch` and `XMLHttpRequest` to capture request/response data and detect duplicate requests.
+- **Router Tracking**: Intercepts `History API` events to automatically log route changes.
 - **Error Intelligence**: Captures `window.onerror` and `unhandledrejection` events.
 - **Performance Monitor**: Detects spam renders or rapidly repeating network requests.
 
