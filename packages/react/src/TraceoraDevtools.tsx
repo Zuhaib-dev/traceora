@@ -53,13 +53,49 @@ export const TraceoraDevtools: React.FC = () => {
   }, [emitter]);
 
   const filteredEvents = useMemo(() => {
-    const reversed = events.slice().reverse();
-    if (filter === "ALL") return reversed;
-    if (filter === "RENDER") return reversed.filter(e => e.type.includes("MOUNT") || e.type.includes("RENDER"));
-    if (filter === "NETWORK") return reversed.filter(e => e.type.includes("NETWORK"));
-    if (filter === "ERROR") return reversed.filter(e => e.type.includes("ERROR"));
-    if (filter === "PERF") return reversed.filter(e => e.type === "PERFORMANCE_WARNING");
-    return reversed;
+    // 1. Group all events by traceId
+    const byTraceId = new Map<string, TraceEvent[]>();
+    events.forEach(e => {
+      if (e.traceId) {
+        if (!byTraceId.has(e.traceId)) byTraceId.set(e.traceId, []);
+        byTraceId.get(e.traceId)!.push(e);
+      }
+    });
+
+    // 2. Build the final list to display
+    const displayList: (TraceEvent & { children?: TraceEvent[] })[] = [];
+    const processedTraceIds = new Set<string>();
+
+    // Iterate backwards (newest first)
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      
+      if (!ev.traceId) {
+        displayList.push(ev);
+        continue;
+      }
+
+      if (processedTraceIds.has(ev.traceId)) continue;
+
+      const traceFamily = byTraceId.get(ev.traceId)!;
+      traceFamily.sort((a, b) => a.timestamp - b.timestamp);
+      
+      const parent = traceFamily.find(e => e.type === "NETWORK_REQUEST") || traceFamily[0];
+      const children = traceFamily.filter(e => e.id !== parent.id);
+      
+      displayList.push({ ...parent, children });
+      processedTraceIds.add(ev.traceId);
+    }
+
+    // Apply filters
+    return displayList.filter(e => {
+      if (filter === "ALL") return true;
+      if (filter === "RENDER") return e.type.includes("MOUNT") || e.type.includes("RENDER");
+      if (filter === "NETWORK") return e.type.includes("NETWORK");
+      if (filter === "ERROR") return e.type.includes("ERROR") || e.children?.some(c => c.type.includes("ERROR"));
+      if (filter === "PERF") return e.type === "PERFORMANCE_WARNING";
+      return true;
+    });
   }, [events, filter]);
 
   if (!isOpen) {
@@ -350,6 +386,47 @@ export const TraceoraDevtools: React.FC = () => {
                     <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
                       {JSON.stringify(ev.metadata, null, 2)}
                     </pre>
+                  </div>
+                )}
+
+                {/* CHILDREN WATERFALL (God View) */}
+                {ev.children && ev.children.length > 0 && (
+                  <div style={{ marginTop: "16px", paddingLeft: "16px", borderLeft: "2px solid rgba(255,255,255,0.1)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+                      ↳ Trace Timeline
+                    </div>
+                    {ev.children.map((child: any) => {
+                      const cIsError = child.type.includes("ERROR");
+                      const cColor = cIsError ? "#ff6b6b" : child.type.includes("DB") || child.type.includes("QUERY") || child.source?.includes("prisma") ? "#cc5de8" : "#20c997";
+                      
+                      return (
+                        <div key={child.id} style={{ 
+                          background: "rgba(0,0,0,0.2)", 
+                          border: `1px solid rgba(255,255,255,0.05)`, 
+                          borderRadius: "6px", 
+                          padding: "10px",
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: "6px"
+                        }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ color: cColor, fontSize: "12px", fontWeight: "bold" }}>{child.type}</span>
+                              <span style={{ background: "rgba(255,255,255,0.1)", padding: "2px 6px", borderRadius: "4px", fontSize: "9px", color: "#ccc" }}>{child.source || "backend"}</span>
+                            </div>
+                            <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "10px", fontFamily: "monospace" }}>
+                              +{Math.max(0, child.timestamp - ev.timestamp)}ms
+                            </span>
+                          </div>
+                          
+                          {child.metadata && (
+                            <pre style={{ margin: 0, padding: "6px", background: "rgba(0,0,0,0.3)", borderRadius: "4px", color: "#a5d8ff", fontSize: "10px", whiteSpace: "pre-wrap", overflowX: "auto" }}>
+                              {JSON.stringify(child.metadata, null, 2)}
+                            </pre>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>
