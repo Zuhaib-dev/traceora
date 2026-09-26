@@ -17,11 +17,15 @@ Traceora is not just an error logger. It is a **full-stack runtime intelligence 
 
 Instead of hunting through `console.log` statements or trying to decipher isolated crash reports, Traceora reconstructs the exact sequence of events (mounts, renders, clicks, API calls, state changes, and errors) into a beautifully unified timeline.
 
-### Why use it?
-1. **Zero-Config Tracing**: With our Vite plugin, every component in your app is automatically traced. No manual hooks required.
-2. **Causality Tracking**: Group related events (e.g., a button click ➡️ 4 state changes ➡️ 2 API calls) under a single `TraceID`.
-3. **Performance Intelligence**: Detect excessive component re-renders or duplicate API requests automatically.
-4. **Missing Context**: When an error happens, Traceora shows you the exact user interactions and network requests that led up to it.
+### Why use it? (God-Tier Features ✨)
+
+Traceora v0.2.0 is completely reimagined with features that give developers superpowers:
+
+1. **🪄 One-Click IDE Jump**: Instantly open the exact file and line of code where an error occurred in your IDE (VSCode/Cursor) by simply clicking "Open in Editor" directly from the DevTools overlay.
+2. **🛑 Live Network Mocking**: Click "Mock Request" on any API call to intercept and stub network traffic instantly. Force 500 errors or fake JSON responses on the fly without writing a single line of code.
+3. **🔗 God View Waterfall**: Trace a single click from the frontend through Next.js Server Actions, Express APIs, and down to Prisma database queries in one unified, deeply nested timeline.
+4. **Zero-Config Auto-Tracking**: With our Vite plugin, every component in your app is automatically traced. No manual hooks required.
+5. **Universal Tracing**: Automatically intercepts `window.fetch`, `XMLHttpRequest`, console errors, and React renders into one sleek glassmorphism UI.
 
 ## The Ecosystem
 
