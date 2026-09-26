@@ -317,6 +317,32 @@ export const TraceoraDevtools: React.FC = () => {
                       </button>
                     );
                   })()}
+                  {isNetwork && ev.type === "NETWORK_REQUEST" && !!ev.metadata?.url && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (!(window as any).__TRACEORA_MOCKS__) {
+                          (window as any).__TRACEORA_MOCKS__ = {};
+                        }
+                        try {
+                          const url = new URL(ev.metadata!.url as string, window.location.origin);
+                          const pattern = url.pathname;
+                          (window as any).__TRACEORA_MOCKS__[pattern] = {
+                            status: 200,
+                            body: { mocked: true, message: "This is a live mock injected by Traceora", timestamp: Date.now() }
+                          };
+                          alert(`Mock injected for ${pattern}! Any future requests to this route will be intercepted.`);
+                        } catch (err) {}
+                      }}
+                      style={{
+                        background: "rgba(51, 154, 240, 0.1)", color: "#339af0", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(51, 154, 240, 0.2)", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", transition: "all 0.2s ease"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(51, 154, 240, 0.2)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(51, 154, 240, 0.1)"}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Mock Request
+                    </button>
+                  )}
                 </div>
                 
                 {ev.metadata && (

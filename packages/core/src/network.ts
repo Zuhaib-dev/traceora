@@ -51,6 +51,38 @@ export function setupNetworkInstrumentation(emitter: EventEmitter) {
 
     const startTime = performance.now();
 
+    // -- PHASE 2: LIVE NETWORK MOCKING --
+    const mocks = (window as any).__TRACEORA_MOCKS__;
+    if (mocks) {
+      for (const [pattern, mockRes] of Object.entries(mocks) as [string, any][]) {
+        if (url.includes(pattern)) {
+          const duration = 12; // Fake duration
+          const bodyStr = typeof mockRes.body === 'string' ? mockRes.body : JSON.stringify(mockRes.body);
+          
+          const fakeResponse = new Response(bodyStr, {
+            status: mockRes.status || 200,
+            headers: { 'Content-Type': 'application/json', 'x-traceora-mocked': 'true' }
+          });
+          
+          trace.emit({
+            type: "NETWORK_RESPONSE",
+            source: "window.fetch (MOCKED)",
+            duration,
+            metadata: { 
+              url, 
+              method, 
+              status: fakeResponse.status, 
+              ok: fakeResponse.ok,
+              mocked: true,
+              sizeBytes: bodyStr.length
+            }
+          });
+          
+          return fakeResponse;
+        }
+      }
+    }
+
     try {
       const response = await originalFetch.apply(this, newArgs);
       const duration = performance.now() - startTime;
