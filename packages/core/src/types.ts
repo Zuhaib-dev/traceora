@@ -11,6 +11,7 @@ export type TraceEventType =
   | "PERFORMANCE_WARNING"
   | "CONSOLE_WARNING"
   | "CONSOLE_ERROR"
+  | "ROUTE_CHANGE"
   | "ERROR";
 
 export interface TraceEvent {
