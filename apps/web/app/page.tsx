@@ -18,6 +18,8 @@ import {
   Zap,
 } from 'lucide-react'
 
+import { VideoModal } from '../components/VideoModal'
+
 const install = `npm install @traceora/core @traceora/react @traceora/vite-plugin`
 const vite = `import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -46,6 +48,7 @@ function CodeWindow({ label, code }: { label: string; code: string }) {
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeStep, setActiveStep] = useState(0)
+  const [videoOpen, setVideoOpen] = useState(false)
   return <main className="min-h-screen overflow-hidden bg-background text-foreground">
     <div className="pointer-events-none fixed inset-0 grid-bg opacity-40" />
     <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
@@ -58,7 +61,21 @@ export default function Page() {
 
     <section className="relative mx-auto max-w-7xl px-5 pb-24 pt-20 lg:px-8 lg:pb-32 lg:pt-32">
       <div className="ambient-orb" />
-      <div className="max-w-4xl"><div className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-primary"><span className="size-1.5 animate-pulse rounded-full bg-primary" />Runtime intelligence for React + Node</div><h1 className="max-w-4xl text-balance text-5xl font-medium leading-[0.94] tracking-[-0.065em] sm:text-7xl lg:text-[92px]">See the whole story<br /><span className="text-primary">behind every click.</span></h1><p className="mt-8 max-w-xl text-pretty text-lg leading-8 text-muted-foreground">Traceora turns scattered logs into one causally-linked timeline — from a React interaction to the exact database query that followed it.</p><div className="mt-10 flex flex-wrap items-center gap-3"><a href="#docs" className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.02]">Start tracing <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" /></a><a href="#how" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium transition-colors hover:border-primary/40 hover:bg-primary/5"><Play className="size-3 fill-current" /> See how it works</a></div></div>
+      <div className="max-w-4xl"><div className="mb-7 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/8 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.14em] text-primary"><span className="size-1.5 animate-pulse rounded-full bg-primary" />Runtime intelligence for React + Node</div><h1 className="max-w-4xl text-balance text-5xl font-medium leading-[0.94] tracking-[-0.065em] sm:text-7xl lg:text-[92px]">See the whole story<br /><span className="text-primary">behind every click.</span></h1><p className="mt-8 max-w-xl text-pretty text-lg leading-8 text-muted-foreground">Traceora turns scattered logs into one causally-linked timeline — from a React interaction to the exact database query that followed it.</p><div className="mt-10 flex flex-wrap items-center gap-3">
+  <a href="#docs" className="group inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground transition-transform hover:scale-[1.02]">
+    Start tracing <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+  </a>
+  <button
+    type="button"
+    onClick={() => setVideoOpen(true)}
+    className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-card/40 px-5 py-3 text-sm font-medium transition-all hover:border-primary/50 hover:bg-primary/10 hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
+  >
+    <span className="grid size-5 place-items-center rounded-full bg-primary/20 text-primary transition-transform group-hover:scale-110">
+      <Play className="size-2.5 fill-current ml-0.5" />
+    </span>
+    See how it works
+  </button>
+</div></div>
       <div className="mt-20 grid gap-4 lg:mt-28 lg:grid-cols-[1fr_1.7fr]">
         <div className="flex flex-col justify-between rounded-2xl border border-border bg-card/70 p-6 backdrop-blur-xl"><div><div className="mb-10 flex items-center justify-between"><span className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Live trace / 8f3a</span><span className="flex items-center gap-1.5 text-[10px] text-primary"><Radio className="size-3" /> recording</span></div><div className="space-y-5 font-mono text-xs"><div className="trace-line active"><span className="text-primary">01</span><span><b className="font-normal text-foreground">Button.Click</b><em className="ml-2 text-muted-foreground">Dashboard.tsx:42</em></span><span className="ml-auto text-muted-foreground">0ms</span></div><div className="trace-line"><span className="text-primary">02</span><span><b className="font-normal text-foreground">State.Change</b><em className="ml-2 text-muted-foreground">filters</em></span><span className="ml-auto text-muted-foreground">1ms</span></div><div className="trace-line"><span className="text-primary">03</span><span><b className="font-normal text-foreground">Fetch.Start</b><em className="ml-2 text-muted-foreground">/api/users</em></span><span className="ml-auto text-muted-foreground">3ms</span></div><div className="trace-line"><span className="text-primary">04</span><span><b className="font-normal text-foreground">DB.Query</b><em className="ml-2 text-muted-foreground">mysql</em></span><span className="ml-auto text-muted-foreground">24ms</span></div></div></div><div className="mt-12 border-t border-border pt-4 text-[11px] text-muted-foreground"><span className="text-foreground">TraceID</span> automatically carried across the stack <ArrowRight className="ml-1 inline size-3" /></div></div>
         <div className="relative flex min-h-77.5 items-center justify-center overflow-hidden rounded-2xl border border-primary/20 bg-[#0b1714] p-8"><div className="scanlines absolute inset-0 opacity-30" /><div className="relative w-full max-w-xl"><div className="mb-4 flex items-center justify-between text-[10px] uppercase tracking-[0.18em] text-primary/70"><span>causality map</span><span>4 events / 31ms</span></div><div className="relative flex items-center justify-between gap-2"><div className="node-card"><Circle className="size-3 fill-primary text-primary" /><span>React</span><small>click</small></div><div className="flow-arrow" /><div className="node-card"><Zap className="size-3 text-primary" /><span>Express</span><small>request</small></div><div className="flow-arrow" /><div className="node-card"><Sparkles className="size-3 text-primary" /><span>MySQL</span><small>query</small></div></div><div className="mt-10 flex justify-center"><div className="rounded border border-primary/25 bg-primary/8 px-4 py-2 font-mono text-[10px] text-primary">X-Traceora-Events → timeline</div></div></div></div>
@@ -82,5 +99,7 @@ emitTraceEvent({
     <section className="mx-5 mb-24 overflow-hidden rounded-2xl border border-primary/20 bg-primary/8 lg:mx-auto lg:max-w-7xl"><div className="flex flex-col items-start justify-between gap-8 p-8 sm:p-12 lg:flex-row lg:items-center lg:p-16"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-primary">Stop guessing</p><h2 className="mt-4 max-w-xl text-4xl tracking-[-0.04em] sm:text-5xl">Make every bug<br />explain itself.</h2></div><a href="#docs" className="group flex shrink-0 items-center gap-3 rounded-full bg-foreground px-5 py-3 text-sm font-medium text-background transition-transform hover:scale-[1.02]">Install Traceora <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></a></div></section>
 
     <footer id="footer" className="border-t border-border"><div className="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-10 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-8"><div><Logo /><p className="mt-3 text-xs">Zero-config full-stack runtime intelligence.</p></div><div className="flex items-center gap-5 text-xs"><span>Built by <a href="https://zuhaibrashid.com" target="_blank" className="text-foreground hover:text-primary">Zuhaib Rashid</a></span><a href="https://github.com/zuhaib-dev/traceora" target="_blank" aria-label="GitHub" className="hover:text-foreground"><GitBranch className="size-4" /></a><a href="https://x.com/xuhaib_x9" target="_blank" aria-label="X" className="hover:text-foreground"><X className="size-4" /></a><a href="https://www.linkedin.com/in/zuhaib-rashid-661345318/" target="_blank" className="hover:text-foreground">LinkedIn</a><a href="https://zuhaibrashid.com" target="_blank" className="hover:text-foreground">Portfolio</a></div></div></footer>
+
+    <VideoModal isOpen={videoOpen} onClose={() => setVideoOpen(false)} />
   </main>
 }
