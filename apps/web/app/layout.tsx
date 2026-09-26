@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://traceora-web.vercel.app'),
   title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
   description: 'Traceora turns scattered logs into one causally-linked timeline — from a React interaction to the exact database query that followed it.',
   keywords: ['traceora', 'react', 'express', 'tracing', 'full-stack', 'devtools', 'profiling', 'runtime intelligence'],
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
     description: 'Traceora turns scattered logs into one causally-linked timeline.',
-    url: 'https://traceora.zuhaibrashid.com',
+    url: 'https://traceora-web.vercel.app',
     siteName: 'Traceora',
     locale: 'en_US',
     type: 'website',
@@ -38,6 +39,7 @@ export default function RootLayout({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
     name: 'Traceora',
+    url: 'https://traceora-web.vercel.app',
     operatingSystem: 'Any',
     applicationCategory: 'DeveloperApplication',
     author: {

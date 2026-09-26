@@ -1,7 +1,7 @@
 import { MetadataRoute } from 'next'
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://traceora.zuhaibrashid.com'
+  const baseUrl = 'https://traceora-web.vercel.app'
 
   return [
     {
