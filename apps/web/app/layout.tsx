@@ -23,6 +23,9 @@ export const metadata: Metadata = {
     description: 'Zero-config full-stack runtime intelligence.',
     creator: '@xuhaib_x9',
   },
+  verification: {
+    google: 'terZRkP5xAisMxUTVWZ_rW6MXSuOeuAFITryD0CBDxA',
+  },
 }
 
 export const viewport: Viewport = {
