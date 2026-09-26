@@ -1,6 +1,6 @@
 {
   "name": "@traceora/vite-plugin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Zero-config auto-tracking plugin for Traceora",
   "author": {
     "name": "Zuhaib Rashid",

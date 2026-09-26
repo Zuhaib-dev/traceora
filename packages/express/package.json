@@ -1,6 +1,6 @@
 {
   "name": "@traceora/express",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Express middleware for Traceora runtime intelligence",
   "author": {
     "name": "Zuhaib Rashid",
