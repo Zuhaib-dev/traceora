@@ -12,6 +12,7 @@ export type TraceEventType =
   | "CONSOLE_WARNING"
   | "CONSOLE_ERROR"
   | "ROUTE_CHANGE"
+  | "DATABASE_QUERY"
   | "ERROR";
 
 export interface TraceEvent {
