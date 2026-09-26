@@ -2,5 +2,5 @@ packages:
   - "packages/*"
   - "examples/*"
   - "apps/*"
-onlyBuiltDependencies:
-  - esbuild
+allowBuilds:
+  esbuild: true
