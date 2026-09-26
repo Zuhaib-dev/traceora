@@ -30,8 +30,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "workspace:*",
-    "lucide-react": "^1.48.0"
+    "@traceora/core": "workspace:*"
   },
   "peerDependencies": {
     "react": "^18.0.0",
