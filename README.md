@@ -31,6 +31,7 @@ Traceora is built as a highly composable monorepo:
 |---|---|
 | [`@traceora/core`](./packages/core/README.md) | The framework-agnostic event engine. Handles network interception, error catching, and the memory store. |
 | [`@traceora/react`](./packages/react/README.md) | React-specific bindings. Includes context providers, error boundaries, and the floating DevTools timeline. |
+| [`@traceora/next`](./packages/next/README.md) | Next.js App Router integration. Seamlessly tracks Client Components, Route Handlers, Server Actions, and database queries. |
 | [`@traceora/vite-plugin`](./packages/vite-plugin/README.md) | The magic. A custom Babel compiler that automatically injects tracking code into your React components during build. |
 | [`@traceora/express`](./packages/express/README.md) | The backend adapter. Uses Node `AsyncLocalStorage` and HTTP Headers to seamlessly inject database and backend errors straight into your frontend timeline. |
 
@@ -118,6 +119,38 @@ app.get("/api/data", (req, res) => {
   res.json({ ok: true });
 });
 ```
+
+## Quick Setup (Next.js)
+
+Using Next.js App Router? Traceora handles Server Components, Route Handlers, and Server Actions seamlessly.
+
+### 1. Install
+
+```bash
+npm install @traceora/next
+```
+
+### 2. Wrap your Layout
+
+Open `app/layout.tsx` and add the provider:
+
+```tsx
+import { TraceoraNextProvider } from "@traceora/next/client";
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body>
+        <TraceoraNextProvider>
+          {children}
+        </TraceoraNextProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+Check out the [Next.js documentation](./packages/next/README.md) to learn how to track Server Actions and API Routes!
 
 ## Tech Stack
 
