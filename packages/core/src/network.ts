@@ -101,4 +101,121 @@ export function setupNetworkInstrumentation(emitter: EventEmitter) {
       throw error;
     }
   };
+
+  if (typeof window.XMLHttpRequest !== "undefined") {
+    const originalXhrOpen = XMLHttpRequest.prototype.open;
+    const originalXhrSend = XMLHttpRequest.prototype.send;
+    const originalXhrSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+
+    interface TraceoraXMLHttpRequest extends XMLHttpRequest {
+      _traceora_method?: string;
+      _traceora_url?: string;
+      _traceora_startTime?: number;
+      _traceora_trace?: ReturnType<EventEmitter["startTrace"]>;
+      _traceora_headers?: Record<string, string>;
+    }
+
+    // @ts-ignore - we are patching a method that has multiple overloads
+    XMLHttpRequest.prototype.open = function (method: string, url: string | URL, ...args: any[]) {
+      const xhr = this as TraceoraXMLHttpRequest;
+      xhr._traceora_method = method;
+      xhr._traceora_url = url.toString();
+      xhr._traceora_startTime = performance.now();
+      
+      xhr._traceora_trace = emitter.startTrace(`xhr ${method} ${url}`, {
+        url: xhr._traceora_url,
+        method: xhr._traceora_method,
+      });
+
+      // @ts-ignore
+      return originalXhrOpen.apply(this, [method, url, ...args]);
+    };
+
+    XMLHttpRequest.prototype.setRequestHeader = function (header: string, value: string) {
+      const xhr = this as TraceoraXMLHttpRequest;
+      if (!xhr._traceora_headers) {
+        xhr._traceora_headers = {};
+      }
+      xhr._traceora_headers[header.toLowerCase()] = value;
+      return originalXhrSetRequestHeader.apply(this, [header, value]);
+    };
+
+    XMLHttpRequest.prototype.send = function (...args: any[]) {
+      const xhr = this as TraceoraXMLHttpRequest;
+      if (xhr._traceora_trace) {
+        // Inject TraceId
+        if (!xhr._traceora_headers || !xhr._traceora_headers["x-traceora-traceid"]) {
+          originalXhrSetRequestHeader.apply(this, ["X-Traceora-TraceId", xhr._traceora_trace.traceId]);
+        }
+
+        xhr._traceora_trace.emit({
+          type: "NETWORK_REQUEST",
+          source: "XMLHttpRequest",
+          metadata: { url: xhr._traceora_url, method: xhr._traceora_method }
+        });
+
+        const handleLoad = () => {
+          if (!xhr._traceora_startTime || !xhr._traceora_trace) return;
+          const duration = performance.now() - xhr._traceora_startTime;
+          
+          let sizeBytes: number | undefined = undefined;
+          const contentLength = xhr.getResponseHeader("content-length");
+          if (contentLength) {
+            sizeBytes = parseInt(contentLength, 10);
+          } else if (xhr.responseText) {
+            sizeBytes = xhr.responseText.length;
+          }
+
+          xhr._traceora_trace.emit({
+            type: "NETWORK_RESPONSE",
+            source: "XMLHttpRequest",
+            duration,
+            metadata: { 
+              url: xhr._traceora_url, 
+              method: xhr._traceora_method, 
+              status: xhr.status, 
+              ok: xhr.status >= 200 && xhr.status < 300,
+              sizeBytes
+            }
+          });
+
+          // EXTRACT BACKEND EVENTS
+          const backendEventsStr = xhr.getResponseHeader("x-traceora-events");
+          if (backendEventsStr) {
+            try {
+              const backendEvents = JSON.parse(backendEventsStr);
+              if (Array.isArray(backendEvents)) {
+                backendEvents.forEach((ev: any) => emitter.emit(ev));
+              }
+            } catch (e) {
+              console.error("[Traceora] Failed to parse backend events from XHR headers", e);
+            }
+          }
+        };
+
+        const handleError = () => {
+          if (!xhr._traceora_startTime || !xhr._traceora_trace) return;
+          const duration = performance.now() - xhr._traceora_startTime;
+          xhr._traceora_trace.emit({
+            type: "NETWORK_ERROR",
+            source: "XMLHttpRequest",
+            duration,
+            metadata: { 
+              url: xhr._traceora_url, 
+              method: xhr._traceora_method, 
+              error: "Network Error"
+            }
+          });
+        };
+
+        xhr.addEventListener("load", handleLoad);
+        xhr.addEventListener("error", handleError);
+        xhr.addEventListener("abort", handleError);
+        xhr.addEventListener("timeout", handleError);
+      }
+
+      // @ts-ignore
+      return originalXhrSend.apply(this, args);
+    };
+  }
 }
