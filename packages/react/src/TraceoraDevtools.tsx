@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { TraceEvent } from "@traceora/core";
 import { useTraceora } from "./TraceoraProvider";
+import { SessionReplayer } from "./SessionReplayer";
 
 // --- Premium Icons ---
 const TraceoraIcon = () => (
@@ -41,7 +42,8 @@ export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
   const [events, setEvents] = useState<TraceEvent[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF">("ALL");
+  const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF" | "SESSION">("ALL");
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -94,6 +96,7 @@ export const TraceoraDevtools: React.FC = () => {
       if (filter === "NETWORK") return e.type.includes("NETWORK");
       if (filter === "ERROR") return e.type.includes("ERROR") || e.children?.some(c => c.type.includes("ERROR"));
       if (filter === "PERF") return e.type === "PERFORMANCE_WARNING";
+      if (filter === "SESSION") return e.type === "SESSION_RECORD";
       return true;
     });
   }, [events, filter]);
@@ -199,7 +202,7 @@ export const TraceoraDevtools: React.FC = () => {
           <strong style={{ fontSize: "16px", letterSpacing: "1px", color: "#fff", textShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>TRACEORA</strong>
           
           <div style={{ display: "flex", gap: "6px", marginLeft: "24px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
-            {["ALL", "RENDER", "NETWORK", "PERF", "ERROR"].map((f) => (
+            {["ALL", "RENDER", "NETWORK", "PERF", "ERROR", "SESSION"].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
@@ -224,6 +227,7 @@ export const TraceoraDevtools: React.FC = () => {
                 {f === "NETWORK" && <GlobeIcon />}
                 {f === "PERF" && <AlertIcon />}
                 {f === "ERROR" && <XCircleIcon />}
+                {f === "SESSION" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>}
                 {f}
               </button>
             ))}
@@ -282,10 +286,12 @@ export const TraceoraDevtools: React.FC = () => {
             const isWarning = ev.type.includes("WARNING") || ev.type.includes("PERF");
             const isNetwork = ev.type.includes("NETWORK");
             const isRender = ev.type.includes("MOUNT") || ev.type.includes("RENDER");
+            const isSession = ev.type === "SESSION_RECORD";
 
-            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isRender ? "#51cf66" : "#ced4da";
+            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isSession ? "#9775fa" : isRender ? "#51cf66" : "#ced4da";
             const bgGradient = isError ? "linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, transparent 100%)" 
                              : isWarning ? "linear-gradient(90deg, rgba(252, 196, 25, 0.05) 0%, transparent 100%)"
+                             : isSession ? "linear-gradient(90deg, rgba(151, 117, 250, 0.05) 0%, transparent 100%)"
                              : "rgba(255,255,255,0.02)";
 
             return (
@@ -304,12 +310,12 @@ export const TraceoraDevtools: React.FC = () => {
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                     <div style={{
                       color: color,
-                      background: `rgba(${color === '#ff6b6b' ? '255,107,107' : color === '#fcc419' ? '252,196,25' : color === '#339af0' ? '51,154,240' : color === '#51cf66' ? '81,207,102' : '206,212,218'}, 0.15)`,
+                      background: `rgba(${color === '#ff6b6b' ? '255,107,107' : color === '#fcc419' ? '252,196,25' : color === '#339af0' ? '51,154,240' : color === '#9775fa' ? '151,117,250' : color === '#51cf66' ? '81,207,102' : '206,212,218'}, 0.15)`,
                       padding: "6px",
                       borderRadius: "6px",
                       display: "flex"
                     }}>
-                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : <ActivityIcon />}
+                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : isSession ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> : <ActivityIcon />}
                     </div>
                     <strong style={{ color, fontSize: "14px", letterSpacing: "0.5px" }}>{ev.type}</strong>
                   </div>
@@ -381,7 +387,10 @@ export const TraceoraDevtools: React.FC = () => {
                   )}
                 </div>
                 
-                {ev.metadata && (
+                {isSession && ev.metadata && Array.isArray(ev.metadata.events) && (
+                  <SessionReplayer events={ev.metadata.events} />
+                )}
+                {!isSession && ev.metadata && (
                   <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)" }}>
                     <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
                       {JSON.stringify(ev.metadata, null, 2)}

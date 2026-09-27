@@ -30,7 +30,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "workspace:*"
+    "@traceora/core": "workspace:*",
+    "rrweb": "^2.1.6",
+    "rrweb-player": "^2.1.6"
   },
   "peerDependencies": {
     "react": "^18.0.0",

@@ -13,6 +13,7 @@ export type TraceEventType =
   | "CONSOLE_ERROR"
   | "ROUTE_CHANGE"
   | "DATABASE_QUERY"
+  | "SESSION_RECORD"
   | "ERROR";
 
 export interface TraceEvent {

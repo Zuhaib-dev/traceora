@@ -29,7 +29,9 @@
     "lint": "eslint src/ --ext .ts",
     "clean": "rm -rf dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "rrweb": "^2.1.6"
+  },
   "devDependencies": {
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
