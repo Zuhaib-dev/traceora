@@ -51,5 +51,12 @@
     "url": "https://github.com/zuhaib-dev/traceora/issues"
   },
   "homepage": "https://traceora-web.vercel.app/",
-  "version": "0.4.0"
+  "version": "0.4.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "@prisma/client",
+      "@prisma/engines"
+    ]
+  }
 }
