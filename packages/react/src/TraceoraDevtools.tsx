@@ -25,18 +25,6 @@ const AlertIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="no
 const XCircleIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>;
 const CodeIcon = () => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>;
 
-function parseFileFromStackTrace(errorString?: string): string | null {
-  if (!errorString) return null;
-  const lines = errorString.split('\n');
-  for (const line of lines) {
-    if (line.includes('node_modules') || line.includes('react-dom') || line.includes('installHook.js')) continue;
-    const match = line.match(/(https?:\/\/[^\/]+\/)([^?)]+)(?:\?[^:]*)?:(\d+):(\d+)/);
-    if (match) {
-      return `${match[2]}:${match[3]}:${match[4]}`;
-    }
-  }
-  return null;
-}
 
 export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
@@ -96,7 +84,7 @@ export const TraceoraDevtools: React.FC = () => {
       if (filter === "NETWORK") return e.type.includes("NETWORK");
       if (filter === "STATE") return e.type === "STATE_CHANGE";
       if (filter === "ERROR") return e.type.includes("ERROR") || e.children?.some(c => c.type.includes("ERROR"));
-      if (filter === "PERF") return e.type === "PERFORMANCE_WARNING";
+      if (filter === "PERF") return e.type === "PERFORMANCE_WARNING" || e.type === "WEB_VITALS";
       if (filter === "SESSION") return e.type === "SESSION_RECORD";
       return true;
     });
@@ -239,6 +227,38 @@ export const TraceoraDevtools: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
           <button 
             onClick={() => {
+              // Create the trace export object
+              // @ts-ignore
+              const allEvents = emitter['store'] ? emitter['store'].getAll() : [];
+              const traceData = {
+                version: "1.0.0",
+                timestamp: new Date().toISOString(),
+                events: allEvents
+              };
+              const blob = new Blob([JSON.stringify(traceData, null, 2)], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `traceora-session-${Date.now()}.json`;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+            style={{
+              background: "rgba(32, 201, 151, 0.1)", color: "#20c997", border: "1px solid rgba(32, 201, 151, 0.2)",
+              padding: "6px 12px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", transition: "all 0.2s ease"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(32, 201, 151, 0.2)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(32, 201, 151, 0.1)"}
+            title="Export Trace to JSON"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Export Trace
+          </button>
+          
+          <button 
+            onClick={() => {
               // @ts-ignore
               if (emitter['store']) emitter['store'].events = [];
             }}
@@ -341,10 +361,11 @@ export const TraceoraDevtools: React.FC = () => {
                     </span>
                   )}
                   {(() => {
-                    if (!isError || !ev.metadata || !ev.metadata.error) return null;
-                    const errorStr = typeof ev.metadata.error === 'string' ? ev.metadata.error : JSON.stringify(ev.metadata.error);
-                    const fileAndLine = parseFileFromStackTrace(errorStr);
-                    if (!fileAndLine) return null;
+                    if (!isError || !ev.metadata || !Array.isArray(ev.metadata.frames) || ev.metadata.frames.length === 0) return null;
+                    const firstAppFrame = ev.metadata.frames.find((f: any) => f.fileName && !f.fileName.includes('node_modules') && !f.fileName.includes('react-dom'));
+                    if (!firstAppFrame || !firstAppFrame.fileName) return null;
+                    // In Vite, file names often start with /src or /@fs/
+                    const fileAndLine = `${firstAppFrame.fileName}:${firstAppFrame.lineNumber || 1}:${firstAppFrame.columnNumber || 1}`;
                     return (
                       <button 
                         onClick={(e) => {
@@ -445,7 +466,44 @@ export const TraceoraDevtools: React.FC = () => {
                   </div>
                 )}
 
-                {!isSession && !isState && !ev.metadata?.graphql && ev.metadata && (
+                {ev.type === "WEB_VITALS" && ev.metadata && (
+                  <div style={{ marginTop: "12px", background: `rgba(${ev.metadata.rating === "poor" ? "255,107,107" : ev.metadata.rating === "needs-improvement" ? "252,196,25" : "81,207,102"}, 0.1)`, border: `1px solid rgba(${ev.metadata.rating === "poor" ? "255,107,107" : ev.metadata.rating === "needs-improvement" ? "252,196,25" : "81,207,102"}, 0.3)`, borderRadius: "6px", padding: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ color: ev.metadata.ratingColor as string, fontSize: "16px", fontWeight: "bold" }}>{ev.metadata.name as string}</div>
+                      <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "11px", marginTop: "4px" }}>Rating: <span style={{ color: ev.metadata.ratingColor as string, textTransform: "capitalize" }}>{ev.metadata.rating as string}</span></div>
+                    </div>
+                    <div style={{ color: "#fff", fontSize: "24px", fontWeight: "bold", textShadow: `0 0 10px ${ev.metadata.ratingColor}` }}>
+                      {ev.metadata.value as number}
+                      <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.4)", marginLeft: "4px" }}>{ev.metadata.name === "CLS" ? "" : "ms"}</span>
+                    </div>
+                  </div>
+                )}
+
+                {isError && ev.metadata && Array.isArray(ev.metadata.frames) && ev.metadata.frames.length > 0 && (
+                  <div style={{ marginTop: "12px", background: "rgba(255, 107, 107, 0.05)", border: "1px solid rgba(255, 107, 107, 0.2)", borderRadius: "6px", padding: "12px", overflowX: "auto" }}>
+                    <div style={{ color: "#ff6b6b", fontSize: "14px", fontWeight: "bold", marginBottom: "8px" }}>{String(ev.metadata.message || ev.metadata.reason || "Error")}</div>
+                    {ev.metadata.frames.map((frame: any, idx: number) => {
+                      const isNodeModule = frame.fileName?.includes('node_modules') || frame.fileName?.includes('react-dom');
+                      return (
+                        <div key={idx} style={{ 
+                          fontSize: "11px", 
+                          color: isNodeModule ? "rgba(255,255,255,0.3)" : "#a5d8ff",
+                          marginBottom: "4px",
+                          display: "flex",
+                          gap: "8px"
+                        }}>
+                          <span style={{ opacity: 0.5, width: "16px", textAlign: "right" }}>{idx}</span>
+                          <span style={{ fontWeight: isNodeModule ? "normal" : "bold" }}>{frame.functionName || '<anonymous>'}</span>
+                          <span style={{ color: "rgba(255,255,255,0.4)" }}>
+                            {frame.fileName ? `${frame.fileName.split('/').pop()}:${frame.lineNumber}:${frame.columnNumber}` : ''}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {!isSession && !isState && !ev.metadata?.graphql && ev.type !== "WEB_VITALS" && !(isError && Array.isArray(ev.metadata?.frames)) && ev.metadata && (
                   <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)", marginTop: "12px" }}>
                     <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
                       {JSON.stringify(ev.metadata, null, 2)}

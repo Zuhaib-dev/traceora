@@ -14,6 +14,7 @@ export type TraceEventType =
   | "ROUTE_CHANGE"
   | "DATABASE_QUERY"
   | "SESSION_RECORD"
+  | "WEB_VITALS"
   | "ERROR";
 
 export interface TraceEvent {

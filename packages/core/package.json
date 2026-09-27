@@ -30,7 +30,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "rrweb": "^2.1.6"
+    "error-stack-parser": "^2.1.4",
+    "rrweb": "^2.1.6",
+    "web-vitals": "^6.2.2"
   },
   "devDependencies": {
     "tsup": "^8.0.2",

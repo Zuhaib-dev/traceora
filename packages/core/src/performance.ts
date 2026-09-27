@@ -1,5 +1,6 @@
 import { EventEmitter } from "./EventEmitter";
 import { TraceEvent } from "./types";
+import { onCLS, onLCP, onINP, onTTFB, onFCP } from "web-vitals";
 
 export class PerformanceMonitor {
   private emitter: EventEmitter;
@@ -76,4 +77,33 @@ export class PerformanceMonitor {
       this.requestHistory.push({ url: url as string, method: method as string, timestamp: now });
     }
   }
+}
+
+export function setupWebVitals(emitter: EventEmitter) {
+  if (typeof window === "undefined") return;
+
+  const emitVital = (metric: any) => {
+    let ratingColor = "#51cf66"; // good
+    if (metric.rating === "needs-improvement") ratingColor = "#fcc419";
+    if (metric.rating === "poor") ratingColor = "#ff6b6b";
+
+    emitter.emit({
+      type: "WEB_VITALS",
+      source: "web-vitals",
+      metadata: {
+        name: metric.name,
+        value: Math.round(metric.value * 100) / 100,
+        rating: metric.rating,
+        delta: Math.round(metric.delta * 100) / 100,
+        id: metric.id,
+        ratingColor
+      }
+    });
+  };
+
+  onCLS(emitVital);
+  onLCP(emitVital);
+  onINP(emitVital);
+  onTTFB(emitVital);
+  onFCP(emitVital);
 }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo, useEffect } from "react";
-import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation, setupConsoleInstrumentation, setupRouterInstrumentation, setupSessionRecording } from "@traceora/core";
+import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation, setupConsoleInstrumentation, setupRouterInstrumentation, setupSessionRecording, setupWebVitals } from "@traceora/core";
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
 
@@ -16,6 +16,7 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // We can't clean this up easily in useMemo, but since it's a provider that usually mounts once, it's ok for now.
     // Ideally it would be in useEffect.
     setupSessionRecording(em);
+    setupWebVitals(em);
     
     // Expose globally for things like Redux/Zustand that are instantiated outside React
     if (typeof window !== "undefined") {

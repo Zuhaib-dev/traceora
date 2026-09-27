@@ -8,3 +8,4 @@ export * from "./console";
 export * from "./router";
 export * from "./session";
 export * from "./state";
+export * from "./performance";
