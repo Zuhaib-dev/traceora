@@ -1,7 +1,7 @@
 {
-  "name": "@traceora/express",
+  "name": "@traceora/node",
   "version": "0.3.0",
-  "description": "Express middleware for Traceora runtime intelligence",
+  "description": "Shared Node.js instrumentation (AsyncLocalStorage, Prisma, Mongoose) for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
     "url": "https://zuhaibrashid.com",
@@ -10,15 +10,11 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/zuhaib-dev/traceora.git",
-    "directory": "packages/express"
+    "directory": "packages/node"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "logo.svg"
-  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -26,6 +22,9 @@
       "require": "./dist/index.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -35,33 +34,23 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "workspace:*",
-    "@traceora/node": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "express": "^4.19.2",
-    "tsup": "^8.0.2",
-    "typescript": "^5.4.3"
+    "@traceora/core": "workspace:*"
   },
   "peerDependencies": {
-    "express": "^4.0.0 || ^5.0.0"
+    "@prisma/client": "^5.0.0",
+    "mongoose": "^8.0.0"
   },
-  "keywords": [
-    "traceora",
-    "express",
-    "telemetry",
-    "monitoring",
-    "tracing",
-    "backend",
-    "observability",
-    "logging",
-    "devtools",
-    "api"
-  ],
-  "bugs": {
-    "url": "https://github.com/zuhaib-dev/traceora/issues"
+  "peerDependenciesMeta": {
+    "@prisma/client": {
+      "optional": true
+    },
+    "mongoose": {
+      "optional": true
+    }
   },
-  "homepage": "https://traceora-web.vercel.app/",
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3"
+  },
   "license": "MIT"
 }

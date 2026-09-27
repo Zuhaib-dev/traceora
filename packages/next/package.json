@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@traceora/core": "workspace:*",
+    "@traceora/node": "workspace:*",
     "@traceora/react": "workspace:*"
   },
   "license": "MIT",

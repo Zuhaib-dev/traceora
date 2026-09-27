@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { asyncLocalStorage, TraceoraContext } from "./context";
+import { asyncLocalStorage, TraceoraContext } from "@traceora/node";
 
 /**
  * Express middleware that initializes a Traceora trace for the incoming request.
