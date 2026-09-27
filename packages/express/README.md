@@ -33,7 +33,8 @@ npm install @traceora/express
 ```typescript
 import express from "express";
 import cors from "cors";
-import { traceora, emitTraceEvent } from "@traceora/express";
+import { traceora } from "@traceora/express";
+import { emitTraceEvent } from "@traceora/node";
 
 const app = express();
 
@@ -71,7 +72,7 @@ Traceora can automatically capture every database query (including filters, argu
 #### Prisma
 ```typescript
 import { PrismaClient } from "@prisma/client";
-import { traceoraPrismaExtension } from "@traceora/express";
+import { traceoraPrismaExtension } from "@traceora/node";
 
 const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
 ```
@@ -79,7 +80,7 @@ const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
 #### Mongoose
 ```typescript
 import mongoose from "mongoose";
-import { traceoraMongoosePlugin } from "@traceora/express";
+import { traceoraMongoosePlugin } from "@traceora/node";
 
 mongoose.plugin(traceoraMongoosePlugin);
 ```

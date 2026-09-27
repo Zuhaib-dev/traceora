@@ -52,5 +52,20 @@
     "tsup": "^8.0.2",
     "typescript": "^5.3.3"
   },
+  "keywords": [
+    "traceora",
+    "node",
+    "backend",
+    "prisma",
+    "mongoose",
+    "telemetry",
+    "tracing",
+    "observability",
+    "devtools"
+  ],
+  "bugs": {
+    "url": "https://github.com/zuhaib-dev/traceora/issues"
+  },
+  "homepage": "https://traceora-web.vercel.app/",
   "license": "MIT"
 }

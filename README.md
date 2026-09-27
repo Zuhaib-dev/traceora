@@ -37,7 +37,8 @@ Traceora is built as a highly composable monorepo:
 | [`@traceora/react`](./packages/react/README.md) | React-specific bindings. Includes context providers, error boundaries, and the floating DevTools timeline. |
 | [`@traceora/next`](./packages/next/README.md) | Next.js App Router integration. Seamlessly tracks Client Components, Route Handlers, Server Actions, and database queries. |
 | [`@traceora/vite-plugin`](./packages/vite-plugin/README.md) | The magic. A custom Babel compiler that automatically injects tracking code into your React components during build. |
-| [`@traceora/express`](./packages/express/README.md) | The backend adapter. Uses Node `AsyncLocalStorage` and HTTP Headers to seamlessly inject database and backend errors straight into your frontend timeline. |
+| [`@traceora/express`](./packages/express/README.md) | The Express backend adapter. Uses Node `AsyncLocalStorage` and HTTP Headers to seamlessly inject database and backend errors straight into your frontend timeline. |
+| [`@traceora/node`](./packages/node/README.md) | The shared backend core. Contains agnostic telemetry logic (Prisma, Mongoose, AsyncLocalStorage) for all server environments. |
 
 ## Quick Setup (React + Vite)
 
@@ -105,7 +106,8 @@ Add the traceora middleware *before* your routes. Make sure your `cors` is confi
 ```ts
 import express from "express";
 import cors from "cors";
-import { traceora, emitTraceEvent } from "@traceora/express";
+import { traceora } from "@traceora/express";
+import { emitTraceEvent } from "@traceora/node";
 
 const app = express();
 
