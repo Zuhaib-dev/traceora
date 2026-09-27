@@ -270,16 +270,19 @@ importers:
       '@babel/core':
         specifier: ^7.23.0
         version: 7.29.7(supports-color@7.2.0)
+      '@babel/plugin-syntax-jsx':
+        specifier: ^7.23.0
+        version: 7.29.7(@babel/core@7.29.7(supports-color@7.2.0))
       '@babel/preset-typescript':
         specifier: ^7.23.0
         version: 7.29.7(@babel/core@7.29.7(supports-color@7.2.0))(supports-color@7.2.0)
+      '@traceora/react':
+        specifier: '*'
+        version: 0.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       magic-string:
         specifier: ^0.30.5
         version: 0.30.21
     devDependencies:
-      '@babel/plugin-syntax-jsx':
-        specifier: ^8.0.1
-        version: 8.0.1(@babel/core@7.29.7(supports-color@7.2.0))
       '@types/babel__core':
         specifier: ^7.20.5
         version: 7.20.5
@@ -480,12 +483,6 @@ packages:
     engines: {node: '>=6.9.0'}
     peerDependencies:
       '@babel/core': ^7.0.0-0
-
-  '@babel/plugin-syntax-jsx@8.0.1':
-    resolution: {integrity: sha512-n0jtCOxEovhU7METqSQjcZO9pX53nu9uNIjMS+hEt+Nt9jA7oOZoBIgbCxhhASmF6T6rPDGge5UAvh6Z4eFz/g==}
-    engines: {node: ^22.18.0 || >=24.11.0}
-    peerDependencies:
-      '@babel/core': ^8.0.0
 
   '@babel/plugin-syntax-typescript@7.29.7':
     resolution: {integrity: sha512-ngr+82Sh0xMz25TPCZi+nC2iTzjfCdWS2ONXTp/PtSCHCgaCNBpdMqgvJ2ccdLlClVZ7sisIgB914j/JFe+RZA==}
@@ -1849,6 +1846,15 @@ packages:
 
   '@tailwindcss/postcss@4.3.3':
     resolution: {integrity: sha512-JTSZZGQi1AyKirbLN3azmjVzef92tcX7h+iSqPdaeStyFpGpDlKvvpxeOE8njhbUanbRwr3z8DyzhICWnMtQeg==}
+
+  '@traceora/core@0.1.7':
+    resolution: {integrity: sha512-Xy5+Bx38xJWb8VctmqFp9uwYZfzz8U1lxmbIbr9FfV/qGch0oWAkvp9azERQMUSACzOQ7pO9Yf15BkdkAuPP6w==}
+
+  '@traceora/react@0.1.7':
+    resolution: {integrity: sha512-2vPvrOoPeUnRh0HdUBGo9Q2R8rsaMsSUqFAcqBxfHrfV657losc7EMSrxabO+GRps6dFxQMZVZonEcq5GKvcXw==}
+    peerDependencies:
+      react: ^18.0.0
+      react-dom: ^18.0.0
 
   '@ts-morph/common@0.27.0':
     resolution: {integrity: sha512-Wf29UqxWDpc+i61k3oIOzcUfQt79PIT9y/MWfAGlrkjg6lBC1hwDECLXPVJAhWjiGbfBCxZd65F/LIZF3+jeJQ==}
@@ -4473,10 +4479,6 @@ snapshots:
 
   '@babel/helper-plugin-utils@7.29.7': {}
 
-  '@babel/helper-plugin-utils@8.0.1(@babel/core@7.29.7(supports-color@7.2.0))':
-    dependencies:
-      '@babel/core': 7.29.7(supports-color@7.2.0)
-
   '@babel/helper-plugin-utils@8.0.1(@babel/core@8.0.6)':
     dependencies:
       '@babel/core': 8.0.6
@@ -4543,11 +4545,6 @@ snapshots:
     dependencies:
       '@babel/core': 7.29.7(supports-color@7.2.0)
       '@babel/helper-plugin-utils': 7.29.7
-
-  '@babel/plugin-syntax-jsx@8.0.1(@babel/core@7.29.7(supports-color@7.2.0))':
-    dependencies:
-      '@babel/core': 7.29.7(supports-color@7.2.0)
-      '@babel/helper-plugin-utils': 8.0.1(@babel/core@7.29.7(supports-color@7.2.0))
 
   '@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7(supports-color@7.2.0))':
     dependencies:
@@ -5459,6 +5456,14 @@ snapshots:
       '@tailwindcss/oxide': 4.3.3
       postcss: 8.5.28
       tailwindcss: 4.3.3
+
+  '@traceora/core@0.1.7': {}
+
+  '@traceora/react@0.1.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@traceora/core': 0.1.7
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
 
   '@ts-morph/common@0.27.0':
     dependencies:

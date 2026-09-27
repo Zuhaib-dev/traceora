@@ -19,6 +19,13 @@
     "dist",
     "logo.svg"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -37,7 +44,7 @@
     "typescript": "^5.4.3"
   },
   "peerDependencies": {
-    "express": "^4.0.0"
+    "express": "^4.0.0 || ^5.0.0"
   },
   "keywords": [
     "traceora",

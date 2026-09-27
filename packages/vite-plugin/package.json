@@ -19,6 +19,13 @@
     "dist",
     "logo.svg"
   ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -28,15 +35,16 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "vite": "^5.0.0 || ^6.0.0"
+    "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
+    "@traceora/react": "*"
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
     "@babel/preset-typescript": "^7.23.0",
+    "@babel/plugin-syntax-jsx": "^7.23.0",
     "magic-string": "^0.30.5"
   },
   "devDependencies": {
-    "@babel/plugin-syntax-jsx": "^8.0.1",
     "@types/babel__core": "^7.20.5",
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",

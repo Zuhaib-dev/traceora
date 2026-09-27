@@ -27,10 +27,6 @@ export class EventEmitter {
     // Notify all subscribers (like the Performance Monitor or DevTools overlay)
     this.listeners.forEach(listener => listener(fullEvent));
     
-    // TODO: Remove this once we have DevTools! For now, let's show the developer what's happening.
-    console.groupCollapsed(`Traceora Event: ${fullEvent.type} (source: ${fullEvent.source || 'unknown'})${fullEvent.traceId ? ` [Trace: ${fullEvent.traceId}]` : ''}`);
-    console.log(fullEvent);
-    console.groupEnd();
 
     return fullEvent;
   }
