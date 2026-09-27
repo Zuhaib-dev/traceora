@@ -1,4 +1,3 @@
-import { record } from "rrweb";
 import { EventEmitter } from "./EventEmitter";
 
 export function setupSessionRecording(emitter: EventEmitter) {
@@ -21,15 +20,20 @@ export function setupSessionRecording(emitter: EventEmitter) {
     }
   }, 5000);
 
-  const stopFn = record({
-    emit(event) {
-      eventsBatch.push(event);
-    },
-    // Optional: add some configuration to limit recording overhead
-    sampling: {
-      mousemove: false, // Could be true, but false saves a lot of data
-      scroll: 150, // throttle scroll
-    }
+  let stopFn: any = null;
+  import("rrweb").then(({ record }) => {
+    stopFn = record({
+      emit(event) {
+        eventsBatch.push(event);
+      },
+      // Optional: add some configuration to limit recording overhead
+      sampling: {
+        mousemove: false, // Could be true, but false saves a lot of data
+        scroll: 150, // throttle scroll
+      }
+    });
+  }).catch(() => {
+    // safely ignore if rrweb is missing
   });
 
   return () => {

@@ -1,6 +1,5 @@
 import { EventEmitter } from "./EventEmitter";
 import { TraceEvent } from "./types";
-import { onCLS, onLCP, onINP, onTTFB, onFCP } from "web-vitals";
 
 export class PerformanceMonitor {
   private emitter: EventEmitter;
@@ -101,9 +100,13 @@ export function setupWebVitals(emitter: EventEmitter) {
     });
   };
 
-  onCLS(emitVital);
-  onLCP(emitVital);
-  onINP(emitVital);
-  onTTFB(emitVital);
-  onFCP(emitVital);
+  import("web-vitals").then(({ onCLS, onLCP, onINP, onTTFB, onFCP }) => {
+    onCLS(emitVital);
+    onLCP(emitVital);
+    onINP(emitVital);
+    onTTFB(emitVital);
+    onFCP(emitVital);
+  }).catch(() => {
+    // web-vitals might not be resolvable in all environments, safely ignore
+  });
 }

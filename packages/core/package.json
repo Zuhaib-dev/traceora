@@ -37,19 +37,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "error-stack-parser": "^2.1.4"
-  },
-  "peerDependencies": {
+    "error-stack-parser": "^2.1.4",
     "rrweb": "^2.1.6",
     "web-vitals": "^6.2.2"
-  },
-  "peerDependenciesMeta": {
-    "rrweb": {
-      "optional": true
-    },
-    "web-vitals": {
-      "optional": true
-    }
   },
   "devDependencies": {
     "tsup": "^8.0.2",

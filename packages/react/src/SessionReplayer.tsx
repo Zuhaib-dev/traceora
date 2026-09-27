@@ -1,16 +1,17 @@
 import React, { useEffect, useRef } from "react";
-import rrwebPlayer from "rrweb-player";
 
 export const SessionReplayer: React.FC<{ events: any[] }> = ({ events }) => {
   const playerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (playerRef.current && events.length > 1) {
-      playerRef.current.innerHTML = "";
+      const target = playerRef.current;
+      target.innerHTML = "";
       
       try {
-        new rrwebPlayer({
-          target: playerRef.current,
+        import("rrweb-player").then(({ default: rrwebPlayer }) => {
+          new rrwebPlayer({
+          target,
           props: {
             events,
             width: 700,
@@ -18,6 +19,7 @@ export const SessionReplayer: React.FC<{ events: any[] }> = ({ events }) => {
             autoPlay: true,
           },
         });
+      });
       } catch (err) {
         console.error("Failed to initialize rrweb player", err);
       }
