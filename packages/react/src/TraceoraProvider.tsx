@@ -17,6 +17,11 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Ideally it would be in useEffect.
     setupSessionRecording(em);
     
+    // Expose globally for things like Redux/Zustand that are instantiated outside React
+    if (typeof window !== "undefined") {
+      (window as any).__traceora_emitter = em;
+    }
+    
     return em;
   }, []);
 

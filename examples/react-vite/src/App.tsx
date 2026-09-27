@@ -1,12 +1,29 @@
 import { useState } from 'react'
 import { useTrace, TraceoraDevtools } from '@traceora/react'
+import { traceoraZustand } from '@traceora/core'
+import { create } from 'zustand'
 import './App.css'
+
+interface BearState {
+  bears: number
+  increase: (by: number) => void
+}
+
+// Ensure Zustand uses our middleware
+const useBearStore = create<BearState>()(
+  traceoraZustand(undefined, "BearStore")((set: any) => ({
+    bears: 0,
+    increase: (by: number) => set((state: BearState) => ({ bears: state.bears + by })),
+  }))
+)
 
 function App() {
   // Get access to the trace starter
   const startTrace = useTrace();
   
   const [count, setCount] = useState(0)
+  const bears = useBearStore((state) => state.bears)
+  const increase = useBearStore((state) => state.increase)
 
   return (
     <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'sans-serif' }}>
@@ -53,11 +70,28 @@ function App() {
         <button
           style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#1971c2', color: '#fff', border: 'none', borderRadius: '4px' }}
           onClick={() => {
-            // Fire API request that triggers backend errors
-            fetch("http://localhost:4000/api/checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ amount: 5000 }) });
+            // Trigger a GraphQL Request
+            fetch("http://localhost:4000/graphql", { 
+              method: "POST", 
+              headers: { "Content-Type": "application/json" }, 
+              body: JSON.stringify({ 
+                operationName: "GetBears",
+                query: "query GetBears($limit: Int!) { bears(limit: $limit) { id name } }",
+                variables: { limit: 5 }
+              }) 
+            });
           }}
         >
-          Checkout API
+          GraphQL API
+        </button>
+
+        <button
+          style={{ padding: '10px 20px', fontSize: '1rem', cursor: 'pointer', background: '#fcc419', color: '#000', border: 'none', borderRadius: '4px' }}
+          onClick={() => {
+            increase(1);
+          }}
+        >
+          Add Zustand Bear ({bears})
         </button>
 
         <button

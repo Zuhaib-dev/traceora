@@ -43,10 +43,36 @@ export function setupNetworkInstrumentation(emitter: EventEmitter) {
       newArgs = [resource, newConfig];
     }
 
+    // Try to parse GraphQL
+    let graphqlOperation = undefined;
+    let requestBody = undefined;
+    
+    try {
+      if (config?.body && typeof config.body === "string") {
+        requestBody = config.body;
+        const parsed = JSON.parse(config.body);
+        if (parsed.query) {
+          graphqlOperation = {
+            operationName: parsed.operationName || "AnonymousQuery",
+            query: parsed.query,
+            variables: parsed.variables
+          };
+        }
+      }
+    } catch (e) {
+      // Not JSON, ignore
+    }
+
     trace.emit({
       type: "NETWORK_REQUEST",
       source: "window.fetch",
-      metadata: { url, method }
+      metadata: { 
+        url, 
+        method,
+        graphql: graphqlOperation,
+        // Save config to allow replaying
+        replayConfig: { url, method, body: requestBody, headers: config?.headers }
+      }
     });
 
     const startTime = performance.now();

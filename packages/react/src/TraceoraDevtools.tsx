@@ -42,7 +42,7 @@ export const TraceoraDevtools: React.FC = () => {
   const emitter = useTraceora();
   const [events, setEvents] = useState<TraceEvent[]>([]);
   const [isOpen, setIsOpen] = useState(false);
-  const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF" | "SESSION">("ALL");
+  const [filter, setFilter] = useState<"ALL" | "RENDER" | "NETWORK" | "ERROR" | "PERF" | "SESSION" | "STATE">("ALL");
 
 
   useEffect(() => {
@@ -94,6 +94,7 @@ export const TraceoraDevtools: React.FC = () => {
       if (filter === "ALL") return true;
       if (filter === "RENDER") return e.type.includes("MOUNT") || e.type.includes("RENDER");
       if (filter === "NETWORK") return e.type.includes("NETWORK");
+      if (filter === "STATE") return e.type === "STATE_CHANGE";
       if (filter === "ERROR") return e.type.includes("ERROR") || e.children?.some(c => c.type.includes("ERROR"));
       if (filter === "PERF") return e.type === "PERFORMANCE_WARNING";
       if (filter === "SESSION") return e.type === "SESSION_RECORD";
@@ -201,8 +202,8 @@ export const TraceoraDevtools: React.FC = () => {
           </div>
           <strong style={{ fontSize: "16px", letterSpacing: "1px", color: "#fff", textShadow: "0 2px 10px rgba(255,255,255,0.2)" }}>TRACEORA</strong>
           
-          <div style={{ display: "flex", gap: "6px", marginLeft: "24px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
-            {["ALL", "RENDER", "NETWORK", "PERF", "ERROR", "SESSION"].map((f) => (
+          <div style={{ display: "flex", gap: "6px", marginLeft: "24px", background: "rgba(0,0,0,0.2)", padding: "4px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", overflowX: "auto" }}>
+            {["ALL", "RENDER", "NETWORK", "PERF", "ERROR", "SESSION", "STATE"].map((f) => (
               <button 
                 key={f}
                 onClick={() => setFilter(f as any)}
@@ -228,6 +229,7 @@ export const TraceoraDevtools: React.FC = () => {
                 {f === "PERF" && <AlertIcon />}
                 {f === "ERROR" && <XCircleIcon />}
                 {f === "SESSION" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>}
+                {f === "STATE" && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>}
                 {f}
               </button>
             ))}
@@ -287,10 +289,11 @@ export const TraceoraDevtools: React.FC = () => {
             const isNetwork = ev.type.includes("NETWORK");
             const isRender = ev.type.includes("MOUNT") || ev.type.includes("RENDER");
             const isSession = ev.type === "SESSION_RECORD";
+            const isState = ev.type === "STATE_CHANGE";
 
-            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isSession ? "#9775fa" : isRender ? "#51cf66" : "#ced4da";
+            const color = isError ? "#ff6b6b" : isWarning ? "#fcc419" : isNetwork ? "#339af0" : isSession ? "#9775fa" : isState ? "#fcc419" : isRender ? "#51cf66" : "#ced4da";
             const bgGradient = isError ? "linear-gradient(90deg, rgba(255, 107, 107, 0.05) 0%, transparent 100%)" 
-                             : isWarning ? "linear-gradient(90deg, rgba(252, 196, 25, 0.05) 0%, transparent 100%)"
+                             : isWarning || isState ? "linear-gradient(90deg, rgba(252, 196, 25, 0.05) 0%, transparent 100%)"
                              : isSession ? "linear-gradient(90deg, rgba(151, 117, 250, 0.05) 0%, transparent 100%)"
                              : "rgba(255,255,255,0.02)";
 
@@ -315,9 +318,12 @@ export const TraceoraDevtools: React.FC = () => {
                       borderRadius: "6px",
                       display: "flex"
                     }}>
-                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : isSession ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> : <ActivityIcon />}
+                      {isError ? <XCircleIcon /> : isWarning ? <AlertIcon /> : isNetwork ? <GlobeIcon /> : isSession ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> : isState ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg> : <ActivityIcon />}
                     </div>
-                    <strong style={{ color, fontSize: "14px", letterSpacing: "0.5px" }}>{ev.type}</strong>
+                    <strong style={{ color, fontSize: "14px", letterSpacing: "0.5px" }}>
+                      {ev.type}
+                      {!!ev.metadata?.graphql && <span style={{ marginLeft: "8px", background: "#e535ab", color: "#fff", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontWeight: "bold" }}>GraphQL</span>}
+                    </strong>
                   </div>
                   <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "12px", fontFamily: "monospace" }}>
                     {new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}
@@ -385,13 +391,62 @@ export const TraceoraDevtools: React.FC = () => {
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg> Mock Request
                     </button>
                   )}
+                  {isNetwork && ev.type === "NETWORK_REQUEST" && !!ev.metadata?.replayConfig && (
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const { url, method, body, headers } = ev.metadata!.replayConfig as any;
+                        fetch(url, { method, body, headers })
+                          .then(() => alert("Request replayed successfully!"))
+                          .catch(err => alert("Replay failed: " + err));
+                      }}
+                      style={{
+                        background: "rgba(81, 207, 102, 0.1)", color: "#51cf66", padding: "4px 10px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(81, 207, 102, 0.2)", display: "flex", alignItems: "center", gap: "6px", cursor: "pointer", transition: "all 0.2s ease"
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = "rgba(81, 207, 102, 0.2)"}
+                      onMouseLeave={e => e.currentTarget.style.background = "rgba(81, 207, 102, 0.1)"}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> Replay Request
+                    </button>
+                  )}
                 </div>
                 
                 {isSession && ev.metadata && Array.isArray(ev.metadata.events) && (
                   <SessionReplayer events={ev.metadata.events} />
                 )}
-                {!isSession && ev.metadata && (
-                  <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)" }}>
+                
+                {isState && ev.metadata && (
+                  <div style={{ display: "flex", gap: "12px", marginTop: "12px", overflowX: "auto" }}>
+                    <div style={{ flex: 1, background: "rgba(255, 107, 107, 0.05)", border: "1px solid rgba(255, 107, 107, 0.2)", borderRadius: "6px", padding: "8px" }}>
+                      <div style={{ color: "#ff6b6b", fontSize: "10px", fontWeight: "bold", marginBottom: "4px", textTransform: "uppercase" }}>Previous State</div>
+                      <pre style={{ margin: 0, color: "#ccc", fontSize: "11px", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                        {JSON.stringify(ev.metadata.prevState, null, 2)}
+                      </pre>
+                    </div>
+                    <div style={{ flex: 1, background: "rgba(81, 207, 102, 0.05)", border: "1px solid rgba(81, 207, 102, 0.2)", borderRadius: "6px", padding: "8px" }}>
+                      <div style={{ color: "#51cf66", fontSize: "10px", fontWeight: "bold", marginBottom: "4px", textTransform: "uppercase" }}>Next State</div>
+                      <pre style={{ margin: 0, color: "#ccc", fontSize: "11px", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+                        {JSON.stringify(ev.metadata.nextState, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+                
+                {isNetwork && !!ev.metadata?.graphql && (
+                  <div style={{ marginTop: "12px", background: "rgba(229, 53, 171, 0.05)", border: "1px solid rgba(229, 53, 171, 0.2)", borderRadius: "6px", padding: "12px" }}>
+                    <div style={{ color: "#e535ab", fontSize: "12px", fontWeight: "bold", marginBottom: "8px" }}>Operation: {(ev.metadata.graphql as any).operationName}</div>
+                    <pre style={{ margin: 0, color: "#ccc", fontSize: "11px", whiteSpace: "pre-wrap", background: "rgba(0,0,0,0.3)", padding: "8px", borderRadius: "4px", marginBottom: "8px" }}>
+                      {(ev.metadata.graphql as any).query}
+                    </pre>
+                    <div style={{ color: "#888", fontSize: "10px", marginBottom: "4px" }}>Variables:</div>
+                    <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "11px", whiteSpace: "pre-wrap", background: "rgba(0,0,0,0.3)", padding: "8px", borderRadius: "4px" }}>
+                      {JSON.stringify((ev.metadata.graphql as any).variables, null, 2)}
+                    </pre>
+                  </div>
+                )}
+
+                {!isSession && !isState && !ev.metadata?.graphql && ev.metadata && (
+                  <div className="traceora-json-block" style={{ background: "rgba(0,0,0,0.3)", borderRadius: "8px", padding: "12px", border: "1px solid rgba(255,255,255,0.03)", marginTop: "12px" }}>
                     <pre style={{ margin: 0, color: "#a5d8ff", fontSize: "12px", overflowX: "auto", whiteSpace: "pre-wrap", wordBreak: "break-all", lineHeight: "1.5" }}>
                       {JSON.stringify(ev.metadata, null, 2)}
                     </pre>
