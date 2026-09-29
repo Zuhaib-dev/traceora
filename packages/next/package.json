@@ -1,6 +1,6 @@
 {
   "name": "@traceora/next",
-  "version": "0.4.5",
+  "version": "0.4.6",
   "description": "Next.js App Router instrumentation for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
@@ -40,9 +40,9 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "0.4.5",
-    "@traceora/node": "0.4.5",
-    "@traceora/react": "0.4.5"
+    "@traceora/core": "workspace:*",
+    "@traceora/node": "workspace:*",
+    "@traceora/react": "workspace:*"
   },
   "license": "MIT",
   "peerDependencies": {
