@@ -13,7 +13,6 @@ export type TraceEventType =
   | "CONSOLE_ERROR"
   | "ROUTE_CHANGE"
   | "DATABASE_QUERY"
-  | "SESSION_RECORD"
   | "WEB_VITALS"
   | "ERROR";
 
