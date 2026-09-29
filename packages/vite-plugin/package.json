@@ -36,12 +36,12 @@
   },
   "peerDependencies": {
     "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
-    "@traceora/react": "*"
-  },
-  "dependencies": {
+    "@traceora/react": "*",
     "@babel/core": "^7.23.0",
     "@babel/preset-typescript": "^7.23.0",
-    "@babel/plugin-syntax-jsx": "^7.23.0",
+    "@babel/plugin-syntax-jsx": "^7.23.0"
+  },
+  "dependencies": {
     "magic-string": "^0.30.5"
   },
   "devDependencies": {
