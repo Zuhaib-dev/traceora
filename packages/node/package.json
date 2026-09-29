@@ -1,6 +1,6 @@
 {
   "name": "@traceora/node",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Shared Node.js instrumentation (AsyncLocalStorage, Prisma, Mongoose) for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
@@ -34,7 +34,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "workspace:*"
+    "@traceora/core": "0.4.5"
   },
   "peerDependencies": {
     "@prisma/client": "^5.0.0",

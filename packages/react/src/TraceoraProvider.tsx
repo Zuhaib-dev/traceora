@@ -3,11 +3,15 @@ import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonit
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
 
-export const TraceoraProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export interface TraceoraProviderConfig {
+  allowedTracingOrigins?: (string | RegExp)[];
+}
+
+export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: TraceoraProviderConfig }> = ({ children, config }) => {
   const emitter = useMemo(() => {
     const store = new EventStore();
     const em = new EventEmitter(store);
-    setupNetworkInstrumentation(em);
+    setupNetworkInstrumentation(em, config);
     setupErrorInstrumentation(em);
     setupConsoleInstrumentation(em);
     setupRouterInstrumentation(em);

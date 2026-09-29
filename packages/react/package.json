@@ -1,6 +1,6 @@
 {
   "name": "@traceora/react",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "React instrumentation for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
@@ -37,7 +37,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@traceora/core": "workspace:*"
+    "@traceora/core": "0.4.5"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",

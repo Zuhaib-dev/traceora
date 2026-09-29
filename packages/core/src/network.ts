@@ -1,6 +1,10 @@
 import { EventEmitter } from "./EventEmitter";
 
-export function setupNetworkInstrumentation(emitter: EventEmitter) {
+export interface NetworkInstrumentationConfig {
+  allowedTracingOrigins?: (string | RegExp)[];
+}
+
+export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentationConfig?: NetworkInstrumentationConfig) {
   if (typeof window === "undefined" || !window.fetch) {
     return;
   }
@@ -33,7 +37,28 @@ export function setupNetworkInstrumentation(emitter: EventEmitter) {
       headers = new Headers();
     }
     
-    headers.set("X-Traceora-TraceId", trace.traceId);
+    let shouldInject = false;
+    try {
+      const isRelative = url.startsWith('/');
+      const targetUrl = new URL(url, window.location.origin);
+      const isSameOrigin = targetUrl.origin === window.location.origin;
+      
+      if (isRelative || isSameOrigin) {
+        shouldInject = true;
+      } else if (instrumentationConfig?.allowedTracingOrigins) {
+        shouldInject = instrumentationConfig.allowedTracingOrigins.some((origin: string | RegExp) => {
+          if (typeof origin === 'string') return targetUrl.href.includes(origin);
+          if (origin instanceof RegExp) return origin.test(targetUrl.href);
+          return false;
+        });
+      }
+    } catch (e) {
+      // Ignore URL parsing errors
+    }
+
+    if (shouldInject) {
+      headers.set("X-Traceora-TraceId", trace.traceId);
+    }
     
     const newConfig = { ...(config || {}), headers };
     let newArgs: [RequestInfo | URL, RequestInit?];
@@ -201,8 +226,25 @@ export function setupNetworkInstrumentation(emitter: EventEmitter) {
     XMLHttpRequest.prototype.send = function (...args: any[]) {
       const xhr = this as TraceoraXMLHttpRequest;
       if (xhr._traceora_trace) {
-        // Inject TraceId
-        if (!xhr._traceora_headers || !xhr._traceora_headers["x-traceora-traceid"]) {
+        // Inject TraceId if same-origin or allowed
+        let shouldInject = false;
+        try {
+          const isRelative = xhr._traceora_url!.startsWith('/');
+          const targetUrl = new URL(xhr._traceora_url!, window.location.origin);
+          const isSameOrigin = targetUrl.origin === window.location.origin;
+          
+          if (isRelative || isSameOrigin) {
+            shouldInject = true;
+          } else if (instrumentationConfig?.allowedTracingOrigins) {
+            shouldInject = instrumentationConfig.allowedTracingOrigins.some((origin: string | RegExp) => {
+              if (typeof origin === 'string') return targetUrl.href.includes(origin);
+              if (origin instanceof RegExp) return origin.test(targetUrl.href);
+              return false;
+            });
+          }
+        } catch (e) {}
+
+        if (shouldInject && (!xhr._traceora_headers || !xhr._traceora_headers["x-traceora-traceid"])) {
           originalXhrSetRequestHeader.apply(this, ["X-Traceora-TraceId", xhr._traceora_trace.traceId]);
         }
 
