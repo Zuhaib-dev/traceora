@@ -1,6 +1,6 @@
 {
   "name": "@traceora/node",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Shared Node.js instrumentation (AsyncLocalStorage, Prisma, Mongoose) for Traceora",
   "author": {
     "name": "Zuhaib Rashid",
