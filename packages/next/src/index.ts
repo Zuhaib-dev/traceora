@@ -27,14 +27,15 @@ export function withTraceora(handler: Function) {
         // But only if we have events to send back!
         const currentContext = asyncLocalStorage.getStore();
         if (currentContext && currentContext.events.length > 0) {
-          const newHeaders = new Headers(response.headers);
-          newHeaders.set("X-Traceora-Events", JSON.stringify(currentContext.events));
-          
-          return new NextResponse(response.body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: newHeaders
-          });
+          try {
+            // We mutate the headers directly instead of recreating the Response.
+            // Recreating the response (e.g. new NextResponse(response.body, ...)) destroys Next.js
+            // internal symbols for redirects (307) and rewrites, causing protected routes to hang!
+            response.headers.set("X-Traceora-Events", JSON.stringify(currentContext.events));
+          } catch (e) {
+            // Headers might be read-only in some environments.
+            console.error("[Traceora] Failed to attach backend events to headers", e);
+          }
         }
         
         return response;
