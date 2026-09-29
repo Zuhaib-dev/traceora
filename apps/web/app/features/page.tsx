@@ -7,7 +7,6 @@ import { ArrowRight, Check, ChevronRight, Code2, Eye, GitBranch, Hexagon, Menu, 
 const featureSets = [
   { id: 'timeline', label: 'Event timeline', eyebrow: '01 / See the whole chain', title: 'One interaction. Every consequence.', body: 'Traceora turns scattered logs into a living timeline, so you can follow a click from browser to database without switching tools.', icon: GitBranch },
   { id: 'signals', label: 'Signals', eyebrow: '02 / Find the moment', title: 'The useful signal stays loud.', body: 'Filter by user, route, or event and surface the exact moment a flow bends. No dashboard archaeology required.', icon: Radio },
-  { id: 'replay', label: 'Flow replay', eyebrow: '03 / Reproduce with context', title: 'Replay the path, not the guess.', body: 'Share a trace with your team and reproduce the same sequence with inputs, timings, and boundaries intact.', icon: Eye },
 ]
 
 function Logo() { return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link> }
