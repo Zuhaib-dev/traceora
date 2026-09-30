@@ -434,16 +434,16 @@ export const TraceoraDevtools: React.FC = () => {
                         </div>
                       )}
 
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#888", fontSize: "11px" }}>
-                        <span style={{ fontWeight: 500, color: "#999" }}>{ev.source || "unknown"}</span>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#888", fontSize: "11px" }}>
+                        <span style={{ fontWeight: 500, color: "#999", wordBreak: "break-all" }}>{ev.source || "unknown"}</span>
                         {ev.traceId && (
                           <>
-                            <span style={{opacity: 0.3}}>|</span>
-                            <span className="tr-mono" style={{ color: "#888" }}>{ev.traceId.slice(0, 8)}</span>
+                            <span style={{opacity: 0.3, marginTop: "1px"}}>|</span>
+                            <span className="tr-mono" style={{ color: "#888", flexShrink: 0, marginTop: "1px" }}>{ev.traceId.slice(0, 8)}</span>
                           </>
                         )}
-                        <span style={{opacity: 0.3}}>|</span>
-                        <span className="tr-mono">{new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}</span>
+                        <span style={{opacity: 0.3, marginTop: "1px"}}>|</span>
+                        <span className="tr-mono" style={{ flexShrink: 0, marginTop: "1px" }}>{new Date(ev.timestamp).toISOString().split('T')[1].slice(0, -1)}</span>
                       </div>
                     </div>
 
@@ -453,7 +453,8 @@ export const TraceoraDevtools: React.FC = () => {
                         if (!isError || !ev.metadata || !Array.isArray(ev.metadata.frames) || ev.metadata.frames.length === 0) return null;
                         const firstAppFrame = ev.metadata.frames.find((f: any) => f.fileName && !f.fileName.includes('node_modules') && !f.fileName.includes('react-dom'));
                         if (!firstAppFrame || !firstAppFrame.fileName) return null;
-                        const fileAndLine = `${firstAppFrame.fileName}:${firstAppFrame.lineNumber || 1}:${firstAppFrame.columnNumber || 1}`;
+                        const cleanFileName = String(firstAppFrame.fileName).replace(/^https?:\/\/[^\/]+/, '');
+                        const fileAndLine = `${cleanFileName}:${firstAppFrame.lineNumber || 1}:${firstAppFrame.columnNumber || 1}`;
                         return (
                           <button 
                             className="tr-btn"
@@ -500,13 +501,13 @@ export const TraceoraDevtools: React.FC = () => {
                   {/* DATA BLOCKS */}
                   {isState && ev.metadata && (
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
-                      <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "12px" }}>
+                      <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "12px", minWidth: 0 }}>
                         <div style={{ color: "#777", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.05em" }}>Previous</div>
                         <pre className="tr-mono tr-scroll" style={{ margin: 0, color: "#A1A1AA", fontSize: "11px", overflowX: "auto" }}>
                           {JSON.stringify(ev.metadata.prevState, null, 2)}
                         </pre>
                       </div>
-                      <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "12px" }}>
+                      <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "12px", minWidth: 0 }}>
                         <div style={{ color: "#777", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", marginBottom: "8px", letterSpacing: "0.05em" }}>Next</div>
                         <pre className="tr-mono tr-scroll" style={{ margin: 0, color: "#EDEDED", fontSize: "11px", overflowX: "auto" }}>
                           {JSON.stringify(ev.metadata.nextState, null, 2)}
@@ -518,7 +519,7 @@ export const TraceoraDevtools: React.FC = () => {
                   {isNetwork && !!ev.metadata?.graphql && (
                     <div style={{ marginTop: "12px", background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "12px" }}>
                       <div style={{ color: "#E83A99", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{(ev.metadata.graphql as any).operationName}</div>
-                      <pre className="tr-mono" style={{ margin: "0 0 12px 0", color: "#A1A1AA", fontSize: "11px", whiteSpace: "pre-wrap" }}>
+                      <pre className="tr-mono tr-scroll" style={{ margin: "0 0 12px 0", color: "#A1A1AA", fontSize: "11px", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
                         {(ev.metadata.graphql as any).query}
                       </pre>
                       {Object.keys((ev.metadata.graphql as any).variables || {}).length > 0 && (
@@ -595,13 +596,28 @@ export const TraceoraDevtools: React.FC = () => {
                                     +{Math.max(0, child.timestamp - ev.timestamp)}ms
                                   </span>
                                 </div>
-                                {child.metadata && (
+                                {child.metadata && child.type === "STATE_CHANGE" && child.metadata.prevState && child.metadata.nextState ? (
+                                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "8px" }}>
+                                    <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px", minWidth: 0 }}>
+                                      <div style={{ color: "#777", fontSize: "9px", fontWeight: 600, textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.05em" }}>Previous</div>
+                                      <pre className="tr-mono tr-scroll" style={{ margin: 0, color: "#A1A1AA", fontSize: "10px", overflowX: "auto" }}>
+                                        {JSON.stringify(child.metadata.prevState, null, 2)}
+                                      </pre>
+                                    </div>
+                                    <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "10px", minWidth: 0 }}>
+                                      <div style={{ color: "#777", fontSize: "9px", fontWeight: 600, textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.05em" }}>Next</div>
+                                      <pre className="tr-mono tr-scroll" style={{ margin: 0, color: "#EDEDED", fontSize: "10px", overflowX: "auto" }}>
+                                        {JSON.stringify(child.metadata.nextState, null, 2)}
+                                      </pre>
+                                    </div>
+                                  </div>
+                                ) : child.metadata ? (
                                   <div style={{ background: "rgba(0, 0, 0, 0.25)", border: "1px solid rgba(255, 255, 255, 0.06)", borderRadius: "8px", padding: "10px", marginTop: "4px" }}>
                                     <pre className="tr-mono tr-scroll" style={{ margin: 0, color: "#A1A1AA", fontSize: "10px", overflowX: "auto", lineHeight: 1.5 }}>
                                       {JSON.stringify(child.metadata, null, 2)}
                                     </pre>
                                   </div>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                           );
