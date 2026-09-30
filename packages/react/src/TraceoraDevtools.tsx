@@ -435,7 +435,7 @@ export const TraceoraDevtools: React.FC = () => {
                       )}
 
                       <div style={{ display: "flex", alignItems: "flex-start", gap: "8px", color: "#888", fontSize: "11px" }}>
-                        <span style={{ fontWeight: 500, color: "#999", wordBreak: "break-all" }}>{ev.source || "unknown"}</span>
+                        <span style={{ fontWeight: 500, color: "#999", wordBreak: "break-all", flex: 1, minWidth: 0 }}>{ev.source || "unknown"}</span>
                         {ev.traceId && (
                           <>
                             <span style={{opacity: 0.3, marginTop: "1px"}}>|</span>
