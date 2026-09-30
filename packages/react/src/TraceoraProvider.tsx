@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useEffect } from "react";
+import React, { createContext, useContext, useRef, useEffect } from "react";
 import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation, setupConsoleInstrumentation, setupRouterInstrumentation, setupWebVitals } from "@traceora/core";
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
@@ -8,7 +8,10 @@ export interface TraceoraProviderConfig {
 }
 
 export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: TraceoraProviderConfig }> = ({ children, config }) => {
-  const emitter = useMemo(() => {
+  const emitterRef = useRef<EventEmitter | null>(null);
+  
+  // Use ref to guarantee a single emitter instance even under StrictMode double-invocation
+  if (!emitterRef.current) {
     const store = new EventStore();
     const em = new EventEmitter(store);
     setupNetworkInstrumentation(em, config);
@@ -24,8 +27,10 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: Tr
       (window as any).__traceora_emitter = em;
     }
     
-    return em;
-  }, []);
+    emitterRef.current = em;
+  }
+  
+  const emitter = emitterRef.current;
 
   useEffect(() => {
     emitter.emit({

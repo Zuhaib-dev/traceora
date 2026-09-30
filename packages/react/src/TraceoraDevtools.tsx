@@ -453,7 +453,7 @@ export const TraceoraDevtools: React.FC = () => {
                         if (!isError || !ev.metadata || !Array.isArray(ev.metadata.frames) || ev.metadata.frames.length === 0) return null;
                         const firstAppFrame = ev.metadata.frames.find((f: any) => f.fileName && !f.fileName.includes('node_modules') && !f.fileName.includes('react-dom'));
                         if (!firstAppFrame || !firstAppFrame.fileName) return null;
-                        const cleanFileName = String(firstAppFrame.fileName).replace(/^https?:\/\/[^\/]+/, '');
+                        const cleanFileName = String(firstAppFrame.fileName).replace(/^https?:\/\/[^\/]+\/?/, '');
                         const fileAndLine = `${cleanFileName}:${firstAppFrame.lineNumber || 1}:${firstAppFrame.columnNumber || 1}`;
                         return (
                           <button 
@@ -588,7 +588,7 @@ export const TraceoraDevtools: React.FC = () => {
                           return (
                             <div key={child.id} className="tr-timeline-item">
                               <div className="tr-timeline-dot" style={{ background: cColor }} />
-                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", paddingBottom: "20px" }}>
+                              <div style={{ display: "flex", flexDirection: "column", gap: "6px", paddingBottom: "20px", minWidth: 0, overflow: "hidden" }}>
                                 <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
                                   <span style={{ color: cColor, fontSize: "12px", fontWeight: 600, flexShrink: 0, marginTop: "2px" }}>{child.type}</span>
                                   <span style={{ color: "#888", fontSize: "11px", wordBreak: "break-all", flex: 1, minWidth: 0 }}>{child.source || "backend"}</span>
