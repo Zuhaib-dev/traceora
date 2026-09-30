@@ -151,11 +151,11 @@ export const TraceoraDevtools: React.FC = () => {
 
     return displayList.filter(e => {
       if (filter === "ALL") return true;
-      if (filter === "RENDER") return e.type.includes("MOUNT") || e.type.includes("RENDER");
-      if (filter === "NETWORK") return e.type.includes("NETWORK");
-      if (filter === "STATE") return e.type === "STATE_CHANGE";
-      if (filter === "ERROR") return e.type.includes("ERROR") || e.children?.some(c => c.type.includes("ERROR"));
-      if (filter === "PERF") return e.type === "PERFORMANCE_WARNING" || e.type === "WEB_VITALS";
+      if (filter === "RENDER") return e.type.includes("MOUNT") || e.type.includes("RENDER") || !!e.children?.some(c => c.type.includes("MOUNT") || c.type.includes("RENDER"));
+      if (filter === "NETWORK") return e.type.includes("NETWORK") || !!e.children?.some(c => c.type.includes("NETWORK"));
+      if (filter === "STATE") return e.type === "STATE_CHANGE" || !!e.children?.some(c => c.type === "STATE_CHANGE");
+      if (filter === "ERROR") return e.type.includes("ERROR") || !!e.children?.some(c => c.type.includes("ERROR"));
+      if (filter === "PERF") return e.type === "PERFORMANCE_WARNING" || e.type === "WEB_VITALS" || !!e.children?.some(c => c.type === "PERFORMANCE_WARNING" || c.type === "WEB_VITALS");
       return true;
     });
   }, [events, filter]);
