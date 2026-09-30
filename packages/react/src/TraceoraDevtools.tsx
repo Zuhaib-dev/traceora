@@ -415,8 +415,8 @@ export const TraceoraDevtools: React.FC = () => {
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)"
                 }}>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px", gap: "12px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", minWidth: 0, flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         {isNetwork && !!method && (
                            <span className="tr-mono" style={{ background: "rgba(255, 255, 255, 0.12)", color: "#FFFFFF", padding: "2px 6px", borderRadius: "4px", fontSize: "10px", fontWeight: 600, border: "1px solid rgba(255,255,255,0.05)" }}>{method}</span>
@@ -447,7 +447,7 @@ export const TraceoraDevtools: React.FC = () => {
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "8px" }}>
+                    <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
                       {/* Action buttons */}
                       {(() => {
                         if (!isError || !ev.metadata || !Array.isArray(ev.metadata.frames) || ev.metadata.frames.length === 0) return null;
@@ -588,10 +588,10 @@ export const TraceoraDevtools: React.FC = () => {
                             <div key={child.id} className="tr-timeline-item">
                               <div className="tr-timeline-dot" style={{ background: cColor }} />
                               <div style={{ display: "flex", flexDirection: "column", gap: "6px", paddingBottom: "20px" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                  <span style={{ color: cColor, fontSize: "12px", fontWeight: 600 }}>{child.type}</span>
-                                  <span style={{ color: "#888", fontSize: "11px" }}>{child.source || "backend"}</span>
-                                  <span className="tr-mono" style={{ color: "#666", fontSize: "11px", marginLeft: "auto" }}>
+                                <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                                  <span style={{ color: cColor, fontSize: "12px", fontWeight: 600, flexShrink: 0, marginTop: "2px" }}>{child.type}</span>
+                                  <span style={{ color: "#888", fontSize: "11px", wordBreak: "break-all", flex: 1, minWidth: 0 }}>{child.source || "backend"}</span>
+                                  <span className="tr-mono" style={{ color: "#666", fontSize: "11px", marginLeft: "auto", flexShrink: 0, marginTop: "2px" }}>
                                     +{Math.max(0, child.timestamp - ev.timestamp)}ms
                                   </span>
                                 </div>
