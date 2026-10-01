@@ -199,4 +199,4 @@ pnpm dev
   <a href="https://github.com/zuhaib-dev">🐙 GitHub</a> &nbsp; | &nbsp; 
   <a href="https://x.com/xuhaib_x9">🐦 Twitter / X</a> &nbsp; | &nbsp; 
   <a href="https://www.linkedin.com/in/zuhaib-rashid-661345318/">💼 LinkedIn</a>
-</div>
+</div> 
