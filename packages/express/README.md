@@ -1,62 +1,54 @@
 <div align="center">
-  <img src="./logo.svg" alt="Traceora Logo" width="100" height="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
-</div>
-
-<div align="center">
+  <br/>
+  <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/express</h1>
-  <p><strong>Zero-Config Full-Stack Telemetry for Express.js</strong></p>
+  <p><strong>Full-stack telemetry for Express.js — zero config, zero extra servers.</strong></p>
 
-  [![npm version](https://img.shields.io/npm/v/@traceora/express.svg?style=flat-square)](https://www.npmjs.com/package/@traceora/express)
+  <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/v/@traceora/express.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
+  <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/dm/@traceora/express?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
+  <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
+  <br/><br/>
 </div>
 
-<hr />
+> Bridges your React frontend and Express backend into one timeline. Backend events appear exactly where they belong — inline with the frontend trace. **No WebSockets, no Redis, no extra infrastructure.**
 
-## What is it?
+---
 
-`@traceora/express` bridges the gap between your frontend React application and your Express.js backend. 
-
-It intercepts incoming API requests from your Traceora-instrumented frontend, creates an isolated tracing context using Node's native `AsyncLocalStorage`, and automatically injects backend events back to the frontend timeline via HTTP Response Headers. 
-
-**Zero WebSockets, zero Redis queues, zero extra servers.**
-
-## Installation
+## 📥 Installation
 
 ```bash
 npm install @traceora/express
 ```
 
-## Quick Start
+---
 
-1. Import and use the `traceora` middleware in your Express application.
-2. Ensure you have `cors` configured to expose the `X-Traceora-Events` header, otherwise the frontend browser won't be able to read it!
+## 🔧 Quick Start
 
-```typescript
-import express from "express";
-import cors from "cors";
-import { traceora } from "@traceora/express";
-import { emitTraceEvent } from "@traceora/node";
+Two steps: add CORS headers, add the middleware.
+
+```ts
+import express from 'express';
+import cors from 'cors';
+import { traceora } from '@traceora/express';
+import { emitTraceEvent } from '@traceora/node';
 
 const app = express();
 
-// 1. MUST expose the custom header for the React DevTools to intercept it!
-app.use(cors({
-  exposedHeaders: ["X-Traceora-Events"],
-}));
+// 1. MUST expose the custom header so the browser can read it
+app.use(cors({ exposedHeaders: ['X-Traceora-Events'] }));
 
-// 2. Add the Traceora middleware before your routes
+// 2. Add Traceora middleware BEFORE your routes
 app.use(traceora());
 
-// 3. (Optional) Manually emit backend events
-app.get("/api/users", async (req, res) => {
-  
-  // Log a database query or backend error!
+// 3. Emit backend events anywhere — no need to pass `req` around
+app.get('/api/users', async (req, res) => {
   emitTraceEvent({
-    type: "STATE_CHANGE", 
-    source: "MySQL",
+    type: 'STATE_CHANGE',
+    source: 'MySQL',
     metadata: {
-      query: "SELECT * FROM users WHERE active = 1",
+      query: 'SELECT * FROM users WHERE active = 1',
       durationMs: 145,
-    }
+    },
   });
 
   res.json({ success: true });
@@ -65,39 +57,91 @@ app.get("/api/users", async (req, res) => {
 app.listen(4000);
 ```
 
-### Database Auto-Tracking (Prisma & Mongoose)
+---
 
-Traceora can automatically capture every database query (including filters, arguments, and exact execution duration) and stream them to your frontend timeline without manually emitting events.
+## ⚙️ How It Works
 
-#### Prisma
-```typescript
-import { PrismaClient } from "@prisma/client";
-import { traceoraPrismaExtension } from "@traceora/node";
+```
+React Frontend                       Express Backend
+──────────────                       ───────────────
+1. fetch('/api/users')
+   + X-Traceora-TraceId header  →  2. Middleware reads TraceId
+                                       Creates AsyncLocalStorage context
+
+                                    3. emitTraceEvent() pushes events
+                                       into the current request's store
+                                       (works anywhere — controllers,
+                                       services, deeply nested code)
+
+                                    4. Before sending response, middleware
+                                       serializes events into:
+                                       X-Traceora-Events header
+
+5. Frontend reads header       ←  
+   Merges backend events into
+   the same timeline under the
+   same Trace ID
+
+6. DevTools renders backend
+   events inline with frontend
+```
+
+---
+
+## 🗄️ Auto-Track Database Queries
+
+No manual `emitTraceEvent()` needed for database operations:
+
+<details>
+<summary><strong>Prisma</strong></summary>
+
+```ts
+import { PrismaClient } from '@prisma/client';
+import { traceoraPrismaExtension } from '@traceora/node';
 
 const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
 ```
+</details>
 
-#### Mongoose
-```typescript
-import mongoose from "mongoose";
-import { traceoraMongoosePlugin } from "@traceora/node";
+<details>
+<summary><strong>Mongoose</strong></summary>
+
+```ts
+import mongoose from 'mongoose';
+import { traceoraMongoosePlugin } from '@traceora/node';
 
 mongoose.plugin(traceoraMongoosePlugin);
 ```
+</details>
 
-## How it Works
+---
 
-1. Your React frontend (using `@traceora/react`) automatically injects `X-Traceora-TraceId` into every `fetch()` request.
-2. The `traceora()` Express middleware catches this ID and spins up an `AsyncLocalStorage` sandbox.
-3. You call `emitTraceEvent()` anywhere in your backend (even nested deeply in controllers or services—no need to pass `req` around!).
-4. Right before Express sends the HTTP response, the middleware intercepts it and injects all collected backend events into the `X-Traceora-Events` HTTP header.
-5. The frontend extracts this header and beautifully paints the backend events exactly where they belong in the frontend timeline.
-
-## API Reference
+## 📖 API Reference
 
 ### `traceora()`
-Returns the Express middleware. Must be used after `cors()` and before your application routes.
 
-### `emitTraceEvent(event: Omit<TraceEvent, "id" | "traceId" | "timestamp">)`
-Pushes an event into the current request's trace context. 
-If called outside of an active HTTP request context (or if the frontend didn't initiate a trace), it safely ignores the event (no-op).
+Returns the Express middleware function. Must be used **after** `cors()` and **before** your routes.
+
+### `emitTraceEvent(event)`
+
+```ts
+emitTraceEvent(event: Omit<TraceEvent, 'id' | 'traceId' | 'timestamp'>): void
+```
+
+Pushes an event into the current request's trace context. If called outside an active HTTP request (or the frontend didn't initiate a trace), it safely no-ops.
+
+---
+
+## 🔗 Related Packages
+
+| Package | Role |
+|---|---|
+| [`@traceora/node`](../node) | Shared backend primitives (used by this package) |
+| [`@traceora/react`](../react) | Frontend counterpart that sends the Trace ID |
+| [`@traceora/core`](../core) | The underlying event engine |
+
+---
+
+<div align="center">
+  <sub>Part of the <a href="https://github.com/zuhaib-dev/traceora">Traceora</a> ecosystem · Built by <a href="https://zuhaibrashid.com">Zuhaib Rashid</a></sub>
+</div>
