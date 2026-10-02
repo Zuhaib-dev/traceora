@@ -1,32 +1,65 @@
-# React + TypeScript + Vite
+<div align="center">
+  <br/>
+  <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
+  <h1>Traceora Playground — React + Vite</h1>
+  <p><strong>A fully instrumented example app for testing & developing Traceora.</strong></p>
+  <br/>
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> This is the development playground used to test every Traceora feature: component auto-tracking, network interception, error boundaries, the DevTools timeline, and live network mocking.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Getting Started
 
-## React Compiler
+### Prerequisites
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Node.js ≥ 18
+- [pnpm](https://pnpm.io/) installed globally
 
-## Expanding the Oxlint configuration
+### Run the playground
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+From the **monorepo root**:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+# 1. Install all dependencies
+pnpm install
+
+# 2. Build all packages in watch mode
+pnpm dev
+
+# 3. In a new terminal — start the playground
+cd examples/react-vite
+pnpm dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+The app will be available at `http://localhost:5173`.
+
+---
+
+## 🧪 What to Test
+
+Once the playground is running, you can verify:
+
+| Feature | How to test |
+|---|---|
+| **Auto-Tracking** | Open the Traceora DevTools overlay — every component mount/render is logged automatically. |
+| **Network Tracing** | Trigger any `fetch` call — the request/response pair appears in the timeline. |
+| **Error Boundary** | Throw an error in a component — the error is caught, logged, and a fallback is shown. |
+| **IDE Jump** | Click "Open in Editor" on any error event — it opens the file in VSCode / Cursor. |
+| **Network Mocking** | Click "Mock Request" on any API call in the timeline to intercept it on the fly. |
+
+---
+
+## 🛠️ Tech Stack
+
+- **Vite** — Dev server with HMR
+- **React 18** — UI framework
+- **TypeScript** — Strict mode enabled
+- **@traceora/vite-plugin** — Auto-instruments all components
+
+---
+
+<div align="center">
+  <sub>Part of the <a href="https://github.com/zuhaib-dev/traceora">Traceora</a> ecosystem · Built by <a href="https://zuhaibrashid.com">Zuhaib Rashid</a></sub>
+</div>
