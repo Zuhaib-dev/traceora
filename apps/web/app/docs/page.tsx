@@ -56,8 +56,14 @@ function CodeBlock({ code, label = 'terminal' }: { code: string; label?: string 
 export default function DocsPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
-  const [active, setActive] = useState('Introduction')
+  const [active, setActiveState] = useState('Introduction')
   const version = 'v0.4.7'
+  const openSection = (item: string) => {
+    setActiveState(item)
+    const path = sectionLinks[item]
+    if (path) window.open(repository + path, '_blank', 'noopener,noreferrer')
+  }
+  const setActive = openSection
   const visibleSections = useMemo(() => sections.map((section) => ({ ...section, items: section.items.filter((item) => item.toLowerCase().includes(query.toLowerCase())) })).filter((section) => section.items.length), [query])
 
   return <main className="min-h-screen bg-background text-foreground"><div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />

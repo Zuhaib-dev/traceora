@@ -48,9 +48,9 @@ export function traceoraPlugin(): Plugin {
                   // Make sure it returns JSX
                   let hasJSX = false;
                   path.traverse({
-                    FunctionDeclaration(inner) { inner.skip(); },
-                    FunctionExpression(inner) { inner.skip(); },
-                    ArrowFunctionExpression(inner) { inner.skip(); },
+                    FunctionDeclaration(inner: any) { inner.skip(); },
+                    FunctionExpression(inner: any) { inner.skip(); },
+                    ArrowFunctionExpression(inner: any) { inner.skip(); },
                     JSXElement() { hasJSX = true; },
                     JSXFragment() { hasJSX = true; }
                   });
