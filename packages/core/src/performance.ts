@@ -8,7 +8,13 @@ export class PerformanceMonitor {
 
   constructor(emitter: EventEmitter) {
     this.emitter = emitter;
-    this.emitter.subscribe(this.handleEvent.bind(this));
+    this.unsubscribe = this.emitter.subscribe(this.handleEvent.bind(this));
+  }
+
+  private unsubscribe: () => void;
+
+  dispose() {
+    this.unsubscribe();
   }
 
   private handleEvent(event: TraceEvent) {
@@ -23,7 +29,7 @@ export class PerformanceMonitor {
 
   private checkExcessiveRendering(event: TraceEvent) {
     const component = event.source || "UnknownComponent";
-    const now = event.timestamp;
+    const now = performance.now();
     
     if (!this.renderCounts[component]) {
       this.renderCounts[component] = [];
@@ -54,7 +60,7 @@ export class PerformanceMonitor {
     const { url, method } = event.metadata || {};
     if (!url || !method) return;
 
-    const now = event.timestamp;
+    const now = performance.now();
     
     // Clear old history (> 500ms)
     this.requestHistory = this.requestHistory.filter(req => now - req.timestamp < 500);

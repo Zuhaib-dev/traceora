@@ -26,3 +26,20 @@ export interface TraceEvent {
   parentId?: string;
   metadata?: Record<string, unknown>;
 }
+
+export function sanitizeTraceData(value: unknown, depth = 0): unknown {
+  if (depth > 5) return "[Truncated]";
+  if (typeof value === "string") return value.slice(0, 2048);
+  if (Array.isArray(value)) return value.slice(0, 100).map(item => sanitizeTraceData(item, depth + 1));
+  if (value && typeof value === "object") {
+    const result: Record<string, unknown> = {};
+    for (const [key, item] of Object.entries(value).slice(0, 100)) {
+      result[key] = /authorization|cookie|token|secret|password|credential|api[-_]?key|email|phone|ssn/i.test(key)
+        ? "[REDACTED]"
+        : sanitizeTraceData(item, depth + 1);
+    }
+    return result;
+  }
+  if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol") return String(value);
+  return value;
+}

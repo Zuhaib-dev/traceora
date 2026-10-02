@@ -22,6 +22,7 @@ export function setupConsoleInstrumentation(emitter: EventEmitter) {
     originalConsoleError.apply(console, args);
   };
 
+  const wrappedError = console.error;
   console.warn = (...args: any[]) => {
     const message = args.map(arg => 
       typeof arg === 'string' ? arg : 
@@ -36,5 +37,11 @@ export function setupConsoleInstrumentation(emitter: EventEmitter) {
     });
     
     originalConsoleWarn.apply(console, args);
+  };
+
+  const wrappedWarn = console.warn;
+  return () => {
+    if (console.error === wrappedError) console.error = originalConsoleError;
+    if (console.warn === wrappedWarn) console.warn = originalConsoleWarn;
   };
 }

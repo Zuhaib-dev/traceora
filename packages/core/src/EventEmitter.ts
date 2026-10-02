@@ -9,6 +9,20 @@ export class EventEmitter {
     this.store = store;
   }
 
+  getAll() {
+    return this.store.getAll();
+  }
+
+  clear() {
+    this.store.clear();
+    this.listeners.forEach(listener => listener({
+      id: "__traceora_clear__",
+      type: "APP_START",
+      timestamp: Date.now(),
+      metadata: { cleared: true },
+    }));
+  }
+
   subscribe(listener: (event: TraceEvent) => void) {
     this.listeners.push(listener);
     return () => {
@@ -20,7 +34,7 @@ export class EventEmitter {
     const fullEvent: TraceEvent = {
       ...event,
       id: crypto.randomUUID(),
-      timestamp: performance.now(),
+      timestamp: Date.now(),
     };
     this.store.add(fullEvent);
     
@@ -45,7 +59,13 @@ export class EventEmitter {
       traceId,
       emit: (event: Omit<TraceEvent, "id" | "timestamp" | "traceId">) => {
         return this.emit({ ...event, traceId });
-      }
+      },
+      fetch: (input: RequestInfo | URL, init: RequestInit = {}) => {
+        const headers = new Headers(input instanceof Request ? input.headers : undefined);
+        new Headers(init.headers).forEach((value, key) => headers.set(key, value));
+        headers.set("X-Traceora-TraceId", traceId);
+        return fetch(input, { ...init, headers });
+      },
     };
   }
 }
