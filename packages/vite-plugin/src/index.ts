@@ -29,13 +29,28 @@ export function traceoraPlugin(): Plugin {
           "@babel/plugin-syntax-jsx",
           {
             visitor: {
-              FunctionDeclaration(path) {
-                // Heuristic: If function name starts with a capital letter, it's likely a React component
-                const name = path.node.id?.name;
+              FunctionDeclaration(path) { injectComponentHook(path); },
+              FunctionExpression(path) { injectComponentHook(path); },
+              ArrowFunctionExpression(path) {
+                if (path.node.body.type === "BlockStatement") injectComponentHook(path);
+              },
+            }
+          }
+        ]
+      });
+
+      function injectComponentHook(path: any) {
+                const parent = path.parentPath;
+                const name = path.node.id?.name ||
+                  (parent?.isVariableDeclarator() && parent.node.id.type === "Identifier" ? parent.node.id.name : undefined) ||
+                  (parent?.isAssignmentExpression() && parent.node.left.type === "Identifier" ? parent.node.left.name : undefined);
                 if (name && /^[A-Z]/.test(name)) {
                   // Make sure it returns JSX
                   let hasJSX = false;
                   path.traverse({
+                    FunctionDeclaration(inner) { inner.skip(); },
+                    FunctionExpression(inner) { inner.skip(); },
+                    ArrowFunctionExpression(inner) { inner.skip(); },
                     JSXElement() { hasJSX = true; },
                     JSXFragment() { hasJSX = true; }
                   });
@@ -52,11 +67,7 @@ export function traceoraPlugin(): Plugin {
                     }
                   }
                 }
-              }
-            }
-          }
-        ]
-      });
+      }
 
       if (hasInjectedImport) {
         // Prepend the import statement for the hook

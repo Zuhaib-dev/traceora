@@ -27,7 +27,7 @@
   </a>
 </p>
 
-> **Stop guessing what your app is doing.** Traceora reconstructs the exact sequence of events — mounts, renders, clicks, API calls, state changes, and errors — into a beautifully unified timeline. From one click on your frontend, trace the entire journey through Next.js Server Actions, Express APIs, and down to your Prisma database queries.
+> **See what your app is doing.** Traceora records browser and backend events in a bounded local timeline. Pass a trace handle to `trace.fetch()` when you want an interaction and its request to share a trace ID.
 
 ---
 
@@ -37,9 +37,9 @@
 |---|---|---|
 | 🪄 | **One-Click IDE Jump** | Open the exact file & line of an error in VSCode / Cursor directly from the DevTools overlay. |
 | 🛑 | **Live Network Mocking** | Click "Mock Request" on any API call to intercept it. Force 500 errors or fake JSON — zero code. |
-| 🔗 | **God View Waterfall** | Trace a single click from the React UI → Server Actions → Express → Prisma in one nested timeline. |
-| ⚡ | **Zero-Config Auto-Tracking** | The Vite plugin auto-instruments every React component. No manual hooks needed. |
-| 🌐 | **Universal Tracing** | `fetch`, `XMLHttpRequest`, console errors, React renders — all captured in one glassmorphism UI. |
+| 🔗 | **Trace propagation** | A trace handle can carry its ID through `trace.fetch()` into an instrumented backend request. |
+| ⚡ | **Component instrumentation** | The Vite plugin instruments named function components written as declarations or block-bodied functions. |
+| 🌐 | **Browser diagnostics** | Capture network timing, errors, route changes, and component lifecycle events in the local DevTools. |
 
 ---
 
@@ -49,8 +49,8 @@
 |---|---|---|
 | [`@traceora/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@traceora/core?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/core) | Framework-agnostic event engine — network interception, error catching, in-memory store. |
 | [`@traceora/react`](./packages/react) | [![npm](https://img.shields.io/npm/v/@traceora/react?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/react) | React bindings — context providers, error boundaries, floating DevTools timeline. |
-| [`@traceora/next`](./packages/next) | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/next) | Next.js App Router — Server Components, Route Handlers, Server Actions, DB queries. |
-| [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — auto-injects tracking into every React component at build time. |
+| [`@traceora/next`](./packages/next) | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/next) | Next.js App Router — client diagnostics, Route Handler correlation, and server-local Server Action capture. |
+| [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — instruments named function components with block bodies. |
 | [`@traceora/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/express) | Express middleware — injects backend events into the frontend timeline via headers. |
 | [`@traceora/node`](./packages/node) | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/node) | Shared backend core — `AsyncLocalStorage`, Prisma extension, Mongoose plugin. |
 
@@ -107,7 +107,7 @@ createRoot(document.getElementById('root')!).render(
 );
 ```
 
-That's it — every component mount, render, network request, and error is now tracked automatically.
+Instrumentation runs in development by default. The event buffer keeps the latest 1,000 events; request bodies and headers are not captured unless enabled explicitly.
 
 </details>
 
@@ -138,7 +138,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-**3 — Trace Route Handlers & Server Actions**
+**3 — Trace Route Handlers**
 
 ```ts
 // app/api/users/route.ts
@@ -149,6 +149,8 @@ export const GET = withTraceora(async () => {
   return Response.json({ users: [] });
 });
 ```
+
+Server Actions can be wrapped with `traceAction`; their events stay server-local unless you pass an `onTrace` callback. They are not automatically merged into the browser timeline.
 
 → See the full [Next.js integration guide](./packages/next/README.md).
 

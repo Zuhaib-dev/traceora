@@ -111,12 +111,8 @@ export const TraceoraDevtools: React.FC = () => {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      // @ts-ignore
-      const allEvents = emitter['store'] ? emitter['store'].getAll() : [];
-      setEvents(prev => prev.length !== allEvents.length ? [...allEvents] : prev);
-    }, 500);
-    return () => clearInterval(interval);
+    setEvents(emitter.getAll());
+    return emitter.subscribe(() => setEvents(emitter.getAll()));
   }, [emitter]);
 
   const filteredEvents = useMemo(() => {
@@ -329,7 +325,7 @@ export const TraceoraDevtools: React.FC = () => {
               a.click();
               URL.revokeObjectURL(url);
             }} style={{ background: "transparent", color: "#A1A1AA", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center" }} title="Export Trace"><DownloadIcon /></button>
-            <button className="tr-btn" onClick={() => { /* @ts-ignore */ if (emitter['store']) emitter['store'].events = []; }} style={{ background: "transparent", color: "#A1A1AA", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center" }} title="Clear Logs"><TrashIcon /></button>
+            <button className="tr-btn" onClick={() => emitter.clear()} style={{ background: "transparent", color: "#A1A1AA", border: "none", padding: "6px", borderRadius: "6px", cursor: "pointer", display: "flex", alignItems: "center" }} title="Clear Logs"><TrashIcon /></button>
             <div style={{ width: "1px", height: "12px", background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
             <button className="tr-btn" onClick={() => setIsOpen(false)} style={{ background: "transparent", border: "none", padding: "6px", borderRadius: "6px", display: "flex", alignItems: "center", color: "#A1A1AA", cursor: "pointer", fontSize: "16px" }} title="Close">×</button>
           </div>
@@ -390,7 +386,7 @@ export const TraceoraDevtools: React.FC = () => {
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {filteredEvents.map((ev, index) => {
-              const isError = ev.type.includes("ERROR");
+              const isError = ev.type.includes("ERROR") || (ev.type === "SERVER_ACTION" && ev.metadata?.status === "error");
               const isWarning = ev.type.includes("WARNING") || ev.type.includes("PERF");
               const isNetwork = ev.type.includes("NETWORK");
               const isRender = ev.type.includes("MOUNT") || ev.type.includes("RENDER");

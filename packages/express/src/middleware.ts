@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { asyncLocalStorage, TraceoraContext } from "@traceora/node";
+import { asyncLocalStorage, TraceoraContext, serializeTraceEvents } from "@traceora/node";
 
 /**
  * Express middleware that initializes a Traceora trace for the incoming request.
@@ -10,7 +10,10 @@ import { asyncLocalStorage, TraceoraContext } from "@traceora/node";
 export function traceora() {
   return (req: Request, res: Response, next: NextFunction) => {
     // Check if the frontend sent a trace ID
-    const traceId = req.headers["x-traceora-traceid"] as string;
+    const headerValue = req.headers["x-traceora-traceid"];
+    const traceId = typeof headerValue === "string" && /^[A-Za-z0-9_-]{1,128}$/.test(headerValue)
+      ? headerValue
+      : undefined;
     
     if (!traceId) {
       // No trace ID, just proceed normally
@@ -34,7 +37,7 @@ export function traceora() {
           if (currentContext && currentContext.events.length > 0) {
             // Inject the events as a JSON string in a custom header
             // The frontend network interceptor will parse this header.
-            res.setHeader("X-Traceora-Events", JSON.stringify(currentContext.events));
+            res.setHeader("X-Traceora-Events", serializeTraceEvents(currentContext.events));
           }
         } catch (e) {
           console.error("[Traceora] Failed to serialize trace events", e);

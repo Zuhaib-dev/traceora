@@ -59,7 +59,7 @@ The foundation. No framework dependencies.
 
 | Module | Purpose |
 |---|---|
-| `EventStore` | In-memory ring buffer — keeps the last *N* events efficiently. |
+| `EventStore` | Bounded in-memory buffer — keeps the latest 1,000 events by default. |
 | `EventEmitter` | Pub/sub system — each event gets a UUID + high-res timestamp. |
 | `setupNetworkInstrumentation()` | Monkey-patches `fetch` and `XHR` to capture request/response pairs. |
 | `setupErrorInstrumentation()` | Hooks `window.onerror` and `unhandledrejection`. |
@@ -75,7 +75,7 @@ Connects React's lifecycle to the core engine.
 | `<TraceoraErrorBoundary>` | Catches React render crashes → logs to timeline → shows fallback. |
 | `<TraceoraDevtools />` | Floating real-time timeline overlay for development. |
 | `useTrace()` | Manual hook to trace specific user interactions. |
-| `useComponentTrace()` | Injected automatically by the Vite plugin into every component. |
+| `useComponentTrace()` | Injected by the Vite plugin into supported named function components with block bodies. |
 
 ### [`@traceora/vite-plugin`](../packages/vite-plugin)
 
@@ -94,7 +94,7 @@ Full-stack tracing for Next.js App Router.
 |---|---|
 | `<TraceoraNextProvider>` | Client-side provider — same as React but optimized for Next.js hydration. |
 | `withTraceora()` | Wraps Route Handlers to create a backend trace context. |
-| `traceAction()` | Wraps Server Actions to measure execution time. |
+| `traceAction()` | Collects server-local action events; an `onTrace` callback is needed to access them. |
 | `traceoraPrismaExtension()` | Auto-traces every Prisma query within a request. |
 | `traceoraMongoosePlugin` | Auto-traces every Mongoose operation within a request. |
 

@@ -1,7 +1,17 @@
-import { EventEmitter } from "./EventEmitter";
+import { EventEmitter, TraceHandle } from "./EventEmitter";
+import { sanitizeTraceData } from "./types";
+import type { TraceEventType } from "./types";
+
+const EVENT_TYPES = new Set<TraceEventType>([
+  "APP_START", "COMPONENT_MOUNT", "COMPONENT_RENDER", "COMPONENT_UNMOUNT", "USER_INTERACTION",
+  "STATE_CHANGE", "NETWORK_REQUEST", "NETWORK_RESPONSE", "NETWORK_ERROR", "PERFORMANCE_WARNING",
+  "CONSOLE_WARNING", "CONSOLE_ERROR", "ROUTE_CHANGE", "DATABASE_QUERY", "WEB_VITALS", "SERVER_ACTION", "ERROR",
+]);
 
 export interface NetworkInstrumentationConfig {
   allowedTracingOrigins?: (string | RegExp)[];
+  captureRequestBodies?: boolean;
+  captureRequestHeaders?: boolean;
 }
 
 export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentationConfig?: NetworkInstrumentationConfig) {
@@ -10,6 +20,18 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
   }
 
   const originalFetch = window.fetch;
+  let originalXhrOpen: typeof XMLHttpRequest.prototype.open | undefined;
+  let originalXhrSend: typeof XMLHttpRequest.prototype.send | undefined;
+  let originalXhrSetRequestHeader: typeof XMLHttpRequest.prototype.setRequestHeader | undefined;
+  const isTraceId = (value: string | null): value is string => !!value && /^[A-Za-z0-9_-]{1,128}$/.test(value);
+  const safeUrl = (value: string) => {
+    try {
+      const parsed = new URL(value, window.location.origin);
+      return `${parsed.origin}${parsed.pathname}`;
+    } catch {
+      return value.split(/[?#]/, 1)[0];
+    }
+  };
 
   window.fetch = async function (...args) {
     const [resource, config] = args;
@@ -20,22 +42,15 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
     else if (resource instanceof URL) url = resource.toString();
 
     const method = config?.method || (resource instanceof Request ? resource.method : "GET");
+    const displayUrl = safeUrl(url);
     
-    // We start a trace for this network request to connect request -> response
-    const trace = emitter.startTrace(`fetch ${method} ${url}`, {
-      url,
-      method,
-    });
-
-    // 1. INJECT TRACE-ID INTO HEADERS
     let headers: Headers;
-    if (config?.headers) {
-      headers = new Headers(config.headers);
-    } else if (resource instanceof Request) {
-      headers = new Headers(resource.headers);
-    } else {
-      headers = new Headers();
-    }
+    headers = new Headers(resource instanceof Request ? resource.headers : undefined);
+    new Headers(config?.headers).forEach((value, key) => headers.set(key, value));
+    const suppliedTraceId = headers.get("X-Traceora-TraceId");
+    const trace = isTraceId(suppliedTraceId)
+      ? { traceId: suppliedTraceId, emit: (event: any) => emitter.emit({ ...event, traceId: suppliedTraceId }) }
+      : emitter.startTrace(`fetch ${method} ${displayUrl}`, { url: displayUrl, method });
     
     let shouldInject = false;
     try {
@@ -47,8 +62,10 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         shouldInject = true;
       } else if (instrumentationConfig?.allowedTracingOrigins) {
         shouldInject = instrumentationConfig.allowedTracingOrigins.some((origin: string | RegExp) => {
-          if (typeof origin === 'string') return targetUrl.href.includes(origin);
-          if (origin instanceof RegExp) return origin.test(targetUrl.href);
+          if (typeof origin === 'string') {
+            try { return targetUrl.origin === new URL(origin).origin; } catch { return false; }
+          }
+          if (origin instanceof RegExp) { origin.lastIndex = 0; return origin.test(targetUrl.origin); }
           return false;
         });
       }
@@ -56,7 +73,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       // Ignore URL parsing errors
     }
 
-    if (shouldInject) {
+    if (shouldInject && !isTraceId(suppliedTraceId)) {
       headers.set("X-Traceora-TraceId", trace.traceId);
     }
     
@@ -73,9 +90,10 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
     let requestBody = undefined;
     
     try {
-      if (config?.body && typeof config.body === "string") {
-        requestBody = config.body;
-        const parsed = JSON.parse(config.body);
+      const body = config?.body;
+      if (instrumentationConfig?.captureRequestBodies && body && typeof body === "string") {
+        requestBody = String(sanitizeTraceData(body));
+        const parsed = JSON.parse(body);
         if (parsed.query) {
           graphqlOperation = {
             operationName: parsed.operationName || "AnonymousQuery",
@@ -92,11 +110,14 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       type: "NETWORK_REQUEST",
       source: "window.fetch",
       metadata: { 
-        url, 
+        url: displayUrl,
         method,
-        graphql: graphqlOperation,
+        graphql: sanitizeTraceData(graphqlOperation),
         // Save config to allow replaying
-        replayConfig: { url, method, body: requestBody, headers: config?.headers }
+        ...(instrumentationConfig?.captureRequestHeaders ? {
+          requestHeaders: sanitizeTraceData(Object.fromEntries(headers.entries())),
+        } : {}),
+        ...(instrumentationConfig?.captureRequestBodies ? { replayConfig: { url: displayUrl, method, body: requestBody } } : {})
       }
     });
 
@@ -120,7 +141,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
             source: "window.fetch (MOCKED)",
             duration,
             metadata: { 
-              url, 
+              url: displayUrl,
               method, 
               status: fakeResponse.status, 
               ok: fakeResponse.ok,
@@ -146,7 +167,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         source: "window.fetch",
         duration,
         metadata: { 
-          url, 
+          url: displayUrl,
           method, 
           status: response.status, 
           ok: response.ok,
@@ -160,7 +181,11 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         try {
           const backendEvents = JSON.parse(backendEventsStr);
           if (Array.isArray(backendEvents)) {
-            backendEvents.forEach(ev => emitter.emit(ev));
+                backendEvents.slice(0, 100).forEach(ev => {
+                  if (ev && typeof ev === "object" && EVENT_TYPES.has(ev.type as TraceEventType)) {
+                    emitter.emit({ ...ev, traceId: trace.traceId });
+                  }
+                });
           }
         } catch (e) {
           console.error("[Traceora] Failed to parse backend events from headers", e);
@@ -176,7 +201,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         source: "window.fetch",
         duration,
         metadata: { 
-          url, 
+          url: displayUrl,
           method, 
           error: error instanceof Error ? error.message : String(error)
         }
@@ -184,17 +209,18 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       throw error;
     }
   };
+  const wrappedFetch = window.fetch;
 
   if (typeof window.XMLHttpRequest !== "undefined") {
-    const originalXhrOpen = XMLHttpRequest.prototype.open;
-    const originalXhrSend = XMLHttpRequest.prototype.send;
-    const originalXhrSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
+    originalXhrOpen = XMLHttpRequest.prototype.open;
+    originalXhrSend = XMLHttpRequest.prototype.send;
+    originalXhrSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 
     interface TraceoraXMLHttpRequest extends XMLHttpRequest {
       _traceora_method?: string;
       _traceora_url?: string;
       _traceora_startTime?: number;
-      _traceora_trace?: ReturnType<EventEmitter["startTrace"]>;
+      _traceora_trace?: TraceHandle;
       _traceora_headers?: Record<string, string>;
     }
 
@@ -203,15 +229,13 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       const xhr = this as TraceoraXMLHttpRequest;
       xhr._traceora_method = method;
       xhr._traceora_url = url.toString();
-      xhr._traceora_startTime = performance.now();
+      xhr._traceora_startTime = 0;
+      xhr._traceora_headers = {};
       
-      xhr._traceora_trace = emitter.startTrace(`xhr ${method} ${url}`, {
-        url: xhr._traceora_url,
-        method: xhr._traceora_method,
-      });
+      xhr._traceora_trace = undefined;
 
       // @ts-ignore
-      return originalXhrOpen.apply(this, [method, url, ...args]);
+      return originalXhrOpen!.apply(this, [method, url, ...args]);
     };
 
     XMLHttpRequest.prototype.setRequestHeader = function (header: string, value: string) {
@@ -220,12 +244,21 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         xhr._traceora_headers = {};
       }
       xhr._traceora_headers[header.toLowerCase()] = value;
-      return originalXhrSetRequestHeader.apply(this, [header, value]);
+      return originalXhrSetRequestHeader!.apply(this, [header, value]);
     };
 
     XMLHttpRequest.prototype.send = function (...args: any[]) {
       const xhr = this as TraceoraXMLHttpRequest;
-      if (xhr._traceora_trace) {
+      if (xhr._traceora_url) {
+        const suppliedTraceId = xhr._traceora_headers?.["x-traceora-traceid"];
+        const validTraceId = suppliedTraceId && isTraceId(suppliedTraceId) ? suppliedTraceId : undefined;
+        const activeTrace: TraceHandle = validTraceId
+          ? { traceId: validTraceId, emit: event => emitter.emit({ ...event, traceId: validTraceId }) }
+          : emitter.startTrace(`xhr ${xhr._traceora_method} ${xhr._traceora_url}`, {
+            url: safeUrl(xhr._traceora_url ?? ""),
+            method: xhr._traceora_method,
+          });
+        xhr._traceora_trace = activeTrace;
         // Inject TraceId if same-origin or allowed
         let shouldInject = false;
         try {
@@ -237,33 +270,37 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
             shouldInject = true;
           } else if (instrumentationConfig?.allowedTracingOrigins) {
             shouldInject = instrumentationConfig.allowedTracingOrigins.some((origin: string | RegExp) => {
-              if (typeof origin === 'string') return targetUrl.href.includes(origin);
-              if (origin instanceof RegExp) return origin.test(targetUrl.href);
+              if (typeof origin === 'string') {
+                try { return targetUrl.origin === new URL(origin).origin; } catch { return false; }
+              }
+              if (origin instanceof RegExp) { origin.lastIndex = 0; return origin.test(targetUrl.origin); }
               return false;
             });
           }
         } catch (e) {}
 
         if (shouldInject && (!xhr._traceora_headers || !xhr._traceora_headers["x-traceora-traceid"])) {
-          originalXhrSetRequestHeader.apply(this, ["X-Traceora-TraceId", xhr._traceora_trace.traceId]);
+          originalXhrSetRequestHeader!.apply(this, ["X-Traceora-TraceId", activeTrace.traceId]);
         }
 
-        xhr._traceora_trace.emit({
+        xhr._traceora_startTime = performance.now();
+        activeTrace.emit({
           type: "NETWORK_REQUEST",
           source: "XMLHttpRequest",
-          metadata: { url: xhr._traceora_url, method: xhr._traceora_method }
+          metadata: { url: safeUrl(xhr._traceora_url ?? ""), method: xhr._traceora_method }
         });
 
         const handleLoad = () => {
-          if (!xhr._traceora_startTime || !xhr._traceora_trace) return;
-          const duration = performance.now() - xhr._traceora_startTime;
+          const startTime = xhr._traceora_startTime;
+          if (startTime == null || startTime <= 0 || !xhr._traceora_trace) return;
+          const duration = performance.now() - startTime;
           
           let sizeBytes: number | undefined = undefined;
           const contentLength = xhr.getResponseHeader("content-length");
           if (contentLength) {
             sizeBytes = parseInt(contentLength, 10);
-          } else if (xhr.responseText) {
-            sizeBytes = xhr.responseText.length;
+          } else {
+            try { sizeBytes = xhr.responseText?.length; } catch { /* responseType is not text */ }
           }
 
           xhr._traceora_trace.emit({
@@ -271,7 +308,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
             source: "XMLHttpRequest",
             duration,
             metadata: { 
-              url: xhr._traceora_url, 
+              url: safeUrl(xhr._traceora_url ?? ""),
               method: xhr._traceora_method, 
               status: xhr.status, 
               ok: xhr.status >= 200 && xhr.status < 300,
@@ -285,7 +322,11 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
             try {
               const backendEvents = JSON.parse(backendEventsStr);
               if (Array.isArray(backendEvents)) {
-                backendEvents.forEach((ev: any) => emitter.emit(ev));
+                backendEvents.slice(0, 100).forEach((ev: any) => {
+                  if (ev && typeof ev === "object" && EVENT_TYPES.has(ev.type as TraceEventType)) {
+                    xhr._traceora_trace?.emit({ ...ev, traceId: xhr._traceora_trace.traceId });
+                  }
+                });
               }
             } catch (e) {
               console.error("[Traceora] Failed to parse backend events from XHR headers", e);
@@ -294,28 +335,47 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         };
 
         const handleError = () => {
-          if (!xhr._traceora_startTime || !xhr._traceora_trace) return;
-          const duration = performance.now() - xhr._traceora_startTime;
+          const startTime = xhr._traceora_startTime;
+          if (startTime == null || startTime <= 0 || !xhr._traceora_trace) return;
+          const duration = performance.now() - startTime;
           xhr._traceora_trace.emit({
             type: "NETWORK_ERROR",
             source: "XMLHttpRequest",
             duration,
             metadata: { 
-              url: xhr._traceora_url, 
+              url: safeUrl(xhr._traceora_url ?? ""),
               method: xhr._traceora_method, 
               error: "Network Error"
             }
           });
         };
 
-        xhr.addEventListener("load", handleLoad);
-        xhr.addEventListener("error", handleError);
-        xhr.addEventListener("abort", handleError);
-        xhr.addEventListener("timeout", handleError);
+        xhr.addEventListener("load", handleLoad, { once: true });
+        xhr.addEventListener("error", handleError, { once: true });
+        xhr.addEventListener("abort", handleError, { once: true });
+        xhr.addEventListener("timeout", handleError, { once: true });
       }
 
       // @ts-ignore
-      return originalXhrSend.apply(this, args);
+      return originalXhrSend!.apply(this, args);
     };
   }
+
+  (wrappedFetch as any).__traceoraOriginal = originalFetch;
+  const wrappedXhrOpen = typeof window.XMLHttpRequest !== "undefined" ? XMLHttpRequest.prototype.open : undefined;
+  const wrappedXhrSend = typeof window.XMLHttpRequest !== "undefined" ? XMLHttpRequest.prototype.send : undefined;
+  const wrappedXhrSetRequestHeader = typeof window.XMLHttpRequest !== "undefined" ? XMLHttpRequest.prototype.setRequestHeader : undefined;
+
+  return () => {
+    if (window.fetch === wrappedFetch) {
+      window.fetch = originalFetch;
+    }
+    if (typeof window.XMLHttpRequest !== "undefined") {
+      if (originalXhrOpen && XMLHttpRequest.prototype.open === wrappedXhrOpen) XMLHttpRequest.prototype.open = originalXhrOpen;
+      if (originalXhrSend && XMLHttpRequest.prototype.send === wrappedXhrSend) XMLHttpRequest.prototype.send = originalXhrSend;
+      if (originalXhrSetRequestHeader && XMLHttpRequest.prototype.setRequestHeader === wrappedXhrSetRequestHeader) {
+        XMLHttpRequest.prototype.setRequestHeader = originalXhrSetRequestHeader;
+      }
+    }
+  };
 }

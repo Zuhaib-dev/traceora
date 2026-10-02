@@ -23,7 +23,6 @@ export const traceoraZustand = (emitter?: EventEmitter, storeName: string = "Zus
         source: storeName,
         metadata: {
           action: "setState",
-          stateCapture: "disabled",
         },
       });
     }
@@ -47,7 +46,6 @@ export const traceoraRedux = (emitter?: EventEmitter) => (store: any) => (next: 
       metadata: {
         action: action.type || "UNKNOWN_ACTION",
         payload: sanitizeTraceData(action.payload),
-        stateCapture: "disabled",
       },
     });
   }

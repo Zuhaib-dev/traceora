@@ -20,7 +20,7 @@
 npm install @traceora/react @traceora/core
 ```
 
-> **Tip:** Also install [`@traceora/vite-plugin`](../vite-plugin) for zero-config auto-tracking of every component.
+> **Tip:** Also install [`@traceora/vite-plugin`](../vite-plugin) to instrument named function components with block bodies.
 
 ---
 
@@ -31,8 +31,8 @@ npm install @traceora/react @traceora/core
 | `<TraceoraProvider>` | Component | Initializes the core engine, instruments `fetch`/`XHR`/History API, catches errors, shares the `EventEmitter` via React Context. |
 | `<TraceoraErrorBoundary>` | Component | Intercepts React render crashes → logs them to the timeline → shows a fallback UI. |
 | `<TraceoraDevtools />` | Component | Floating, real-time visual timeline for development. Drop it in and go. |
-| `useTrace()` | Hook | Manually trace specific interactions (e.g., complex button flows). |
-| `useComponentTrace()` | Hook | Injected automatically by the Vite plugin. Tracks component mount & render. |
+| `useTrace()` | Hook | Start an interaction trace. Its `fetch()` method propagates the trace ID to a request. |
+| `useComponentTrace()` | Hook | Tracks component mount & render. The Vite plugin injects it into supported named function components. |
 
 ---
 
@@ -71,13 +71,15 @@ export function UserProfile() {
     // Links this click + any subsequent API calls under one Trace ID
     const trace = startTrace('Save_Profile');
 
-    // fetch is already instrumented by TraceoraProvider
-    fetch('/api/save', { method: 'POST' });
+    // Use the trace handle to correlate this request with the interaction.
+    void trace.fetch('/api/save', { method: 'POST' });
   };
 
   return <button onClick={handleSave}>Save</button>;
 }
 ```
+
+Instrumentation is enabled in development by default. Set `config={{ enabled: true }}` to opt in elsewhere. Event history is capped at 1,000 by default. Request bodies and headers are excluded unless `captureRequestBodies` or `captureRequestHeaders` is enabled; inspect captured data carefully before enabling either option.
 
 ---
 

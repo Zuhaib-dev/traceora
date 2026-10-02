@@ -1,5 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
-import { TraceEvent } from "@traceora/core";
+import { TraceEvent, sanitizeTraceData } from "@traceora/core";
 
 export interface TraceoraContext {
   traceId: string;
@@ -25,8 +25,19 @@ export function emitTraceEvent(event: Omit<TraceEvent, "id" | "traceId" | "times
 
   context.events.push({
     ...event,
-    id: Math.random().toString(36).substring(2, 9),
+    id: crypto.randomUUID(),
     traceId: context.traceId,
     timestamp: Date.now(),
   });
+}
+
+export function serializeTraceEvents(events: TraceEvent[], maxBytes = 6000) {
+  const included: TraceEvent[] = [];
+  for (const event of events.slice(-100)) {
+    const sanitized = sanitizeTraceData(event) as TraceEvent;
+    const candidate = JSON.stringify([...included, sanitized]);
+    if (Buffer.byteLength(candidate, "utf8") > maxBytes) break;
+    included.push(sanitized);
+  }
+  return JSON.stringify(included);
 }

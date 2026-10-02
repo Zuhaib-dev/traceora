@@ -1,4 +1,5 @@
 import { emitTraceEvent } from "./context";
+import { sanitizeTraceData } from "@traceora/core";
 
 /**
  * Creates a Mongoose Plugin that automatically tracks database queries
@@ -7,7 +8,7 @@ import { emitTraceEvent } from "./context";
  * Usage:
  * mongoose.plugin(traceoraMongoosePlugin);
  */
-export function traceoraMongoosePlugin(schema: any) {
+export function traceoraMongoosePlugin(schema: any, options: { captureQueryArgs?: boolean } = {}) {
   const operations = [
     'find', 'findOne', 'findOneAndUpdate', 'findOneAndRemove', 'findOneAndDelete',
     'insertOne', 'insertMany', 'updateOne', 'updateMany', 'deleteOne', 'deleteMany',
@@ -27,21 +28,22 @@ export function traceoraMongoosePlugin(schema: any) {
         const duration = Date.now() - this._traceoraStartTime;
         
         let args = "";
-        try {
-          args = JSON.stringify(this.getQuery ? this.getQuery() : {});
-        } catch (e) {
-          args = "[Unserializable]";
+        if (options.captureQueryArgs) {
+          try {
+            args = JSON.stringify(sanitizeTraceData(this.getQuery ? this.getQuery() : {}));
+          } catch {
+            args = "[Unserializable]";
+          }
         }
 
         emitTraceEvent({
-          // @ts-ignore - Event type is generic enough
           type: "DATABASE_QUERY",
           source: `Mongoose: ${this.model?.modelName || 'UnknownModel'}.${operation}`,
           duration,
           metadata: {
             model: this.model?.modelName || 'UnknownModel',
             operation,
-            args,
+            ...(options.captureQueryArgs ? { args } : {}),
           }
         });
       }

@@ -10,7 +10,7 @@
   <br/><br/>
 </div>
 
-> Seamlessly bridges **Client Components**, **Server Components**, **Route Handlers**, and **Server Actions** into one unified timeline. If it runs in your Next.js app, Traceora can trace it.
+> Adds client diagnostics and trace correlation for Route Handlers. Server Action traces are collected on the server and require an `onTrace` callback for access; they are not automatically joined to the browser timeline.
 
 ---
 
@@ -28,7 +28,7 @@ npm install @traceora/next
 |---|---|---|
 | `<TraceoraNextProvider>` | Client Component | Frontend provider — initializes tracing, instruments `fetch`/`XHR`, adds DevTools overlay. |
 | `withTraceora()` | HOF | Wraps Route Handlers to establish a backend trace context and inject events into the response. |
-| `traceAction()` | HOF | Wraps Server Actions to measure execution time and link them to the frontend trace. |
+| `traceAction()` | HOF | Captures a Server Action and nested backend events; provide `onTrace` to receive its server-local events. |
 | `emitTraceEvent()` | Function | Manually emit a backend event within a traced request. |
 | `traceoraPrismaExtension()` | Prisma Extension | Auto-traces every Prisma query within a request. |
 | `traceoraMongoosePlugin` | Mongoose Plugin | Auto-traces every Mongoose operation within a request. |
@@ -80,17 +80,22 @@ export const GET = withTraceora(async (req: Request) => {
 
 ### 3. Trace Server Actions
 
-Wrap Server Actions with `traceAction` to capture execution time:
+Wrap Server Actions with `traceAction` to capture execution time and receive the resulting server-local events:
 
 ```ts
 'use server';
 import { traceAction } from '@traceora/next';
 
-export const createUser = traceAction('createUserAction', async (data: any) => {
+export const createUser = traceAction('createUserAction', async (data: unknown) => {
   // Your action logic...
   return { success: true };
+}, (events) => {
+  // Forward to your own development logger or storage if needed.
+  console.debug(events);
 });
 ```
+
+`traceAction` does not automatically return its events to the browser or correlate them with a client trace.
 
 ### 4. Auto-Track Database Queries
 

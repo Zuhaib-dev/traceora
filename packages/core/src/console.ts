@@ -1,4 +1,5 @@
 import { EventEmitter } from "./EventEmitter";
+import { sanitizeTraceData } from "./types";
 
 export function setupConsoleInstrumentation(emitter: EventEmitter) {
   const originalConsoleError = console.error;
@@ -9,13 +10,13 @@ export function setupConsoleInstrumentation(emitter: EventEmitter) {
     const message = args.map(arg => 
       typeof arg === 'string' ? arg : 
       arg instanceof Error ? arg.message : 
-      JSON.stringify(arg)
+      JSON.stringify(sanitizeTraceData(arg))
     ).join(' ');
 
     emitter.emit({
       type: "CONSOLE_ERROR",
       source: "console.error",
-      metadata: { message, rawArgs: args }
+      metadata: { message }
     });
     
     // Call the original native console.error so it still prints in the browser
@@ -27,13 +28,13 @@ export function setupConsoleInstrumentation(emitter: EventEmitter) {
     const message = args.map(arg => 
       typeof arg === 'string' ? arg : 
       arg instanceof Error ? arg.message : 
-      JSON.stringify(arg)
+      JSON.stringify(sanitizeTraceData(arg))
     ).join(' ');
 
     emitter.emit({
       type: "CONSOLE_WARNING",
       source: "console.warn",
-      metadata: { message, rawArgs: args }
+      metadata: { message }
     });
     
     originalConsoleWarn.apply(console, args);

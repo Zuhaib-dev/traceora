@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { asyncLocalStorage, TraceoraContext, emitTraceEvent, traceoraPrismaExtension, traceoraMongoosePlugin } from "@traceora/node";
+import { asyncLocalStorage, TraceoraContext, emitTraceEvent, traceoraPrismaExtension, traceoraMongoosePlugin, serializeTraceEvents } from "@traceora/node";
+import type { TraceEvent } from "@traceora/core";
 
 export { emitTraceEvent, traceoraPrismaExtension, traceoraMongoosePlugin };
 
@@ -8,7 +8,8 @@ export { emitTraceEvent, traceoraPrismaExtension, traceoraMongoosePlugin };
  */
 export function withTraceora(handler: Function) {
   return async function (req: Request, ...args: any[]) {
-    const traceId = req.headers.get("x-traceora-traceid");
+    const requestedTraceId = req.headers.get("x-traceora-traceid");
+    const traceId = requestedTraceId && /^[A-Za-z0-9_-]{1,128}$/.test(requestedTraceId) ? requestedTraceId : null;
 
     if (!traceId) {
       return handler(req, ...args);
@@ -31,7 +32,7 @@ export function withTraceora(handler: Function) {
             // We mutate the headers directly instead of recreating the Response.
             // Recreating the response (e.g. new NextResponse(response.body, ...)) destroys Next.js
             // internal symbols for redirects (307) and rewrites, causing protected routes to hang!
-            response.headers.set("X-Traceora-Events", JSON.stringify(currentContext.events));
+            response.headers.set("X-Traceora-Events", serializeTraceEvents(currentContext.events));
           } catch (e) {
             // Headers might be read-only in some environments.
             console.error("[Traceora] Failed to attach backend events to headers", e);
@@ -49,18 +50,41 @@ export function withTraceora(handler: Function) {
 /**
  * Wraps a Next.js Server Action to automatically trace its execution.
  */
-export function traceAction<T extends (...args: any[]) => any>(actionName: string, action: T): T {
+export function traceAction<T extends (...args: any[]) => any>(
+  actionName: string,
+  action: T,
+  onTrace?: (events: TraceEvent[]) => void,
+): T {
   return (async (...args: Parameters<T>) => {
-    // Note: Server actions don't cleanly support TraceId injection from the client yet via headers
-    // because React obscures the network request. But we can still time the action itself!
-    const startTime = Date.now();
-    try {
-      const result = await action(...args);
-      // In a real implementation, we would want to somehow stream this event back, 
-      // but Server Actions return pure data, not HTTP Responses.
-      return result;
-    } catch (error) {
-      throw error;
-    }
+    const context: TraceoraContext = {
+      traceId: `trace_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
+      events: [],
+    };
+    return asyncLocalStorage.run(context, async () => {
+      const startTime = performance.now();
+      emitTraceEvent({ type: "USER_INTERACTION", source: `Server Action: ${actionName}`, metadata: { action: actionName } });
+      try {
+        const result = await action(...args);
+        emitTraceEvent({
+          type: "SERVER_ACTION",
+          source: actionName,
+          duration: performance.now() - startTime,
+          metadata: { status: "success" },
+        });
+        return result;
+      } catch (error) {
+        emitTraceEvent({
+          type: "SERVER_ACTION",
+          source: actionName,
+          duration: performance.now() - startTime,
+          metadata: { status: "error", error: error instanceof Error ? error.message : String(error) },
+        });
+        throw error;
+      } finally {
+        try { onTrace?.(context.events.slice()); } catch (error) {
+          console.error("[Traceora] onTrace callback failed", error);
+        }
+      }
+    });
   }) as T;
 }

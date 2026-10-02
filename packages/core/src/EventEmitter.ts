@@ -1,6 +1,8 @@
 import { TraceEvent } from "./types";
 import { EventStore } from "./EventStore";
 
+export type TraceHandle = Pick<ReturnType<EventEmitter["startTrace"]>, "traceId" | "emit">;
+
 export class EventEmitter {
   private store: EventStore;
   private listeners: Array<(event: TraceEvent) => void> = [];
@@ -15,12 +17,11 @@ export class EventEmitter {
 
   clear() {
     this.store.clear();
-    this.listeners.forEach(listener => listener({
-      id: "__traceora_clear__",
-      type: "APP_START",
-      timestamp: Date.now(),
-      metadata: { cleared: true },
-    }));
+    for (const listener of this.listeners) {
+      try {
+        listener({ id: "__traceora_clear__", type: "APP_START", timestamp: Date.now(), metadata: { cleared: true } });
+      } catch { /* listeners must not interrupt the host application */ }
+    }
   }
 
   subscribe(listener: (event: TraceEvent) => void) {
@@ -39,7 +40,9 @@ export class EventEmitter {
     this.store.add(fullEvent);
     
     // Notify all subscribers (like the Performance Monitor or DevTools overlay)
-    this.listeners.forEach(listener => listener(fullEvent));
+    for (const listener of this.listeners) {
+      try { listener(fullEvent); } catch { /* listeners must not interrupt the host application */ }
+    }
     
 
     return fullEvent;

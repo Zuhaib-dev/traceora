@@ -64,7 +64,10 @@ new PerformanceMonitor(emitter);
 // 5. Manually trace a flow
 const trace = emitter.startTrace('User_Login');
 trace.emit({ type: 'USER_INTERACTION', source: 'Submit_Button' });
+await trace.fetch('/api/login', { method: 'POST' });
 ```
+
+The trace handle's `fetch()` method attaches its trace ID to that request. Ordinary requests are recorded as their own traces. Request bodies and headers are omitted unless explicitly enabled in the React provider configuration.
 
 ---
 

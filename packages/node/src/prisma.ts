@@ -1,4 +1,5 @@
 import { emitTraceEvent } from "./context";
+import { sanitizeTraceData } from "@traceora/core";
 
 /**
  * Creates a Prisma Client Extension that automatically tracks database queries
@@ -7,7 +8,7 @@ import { emitTraceEvent } from "./context";
  * Usage:
  * const prisma = new PrismaClient().$extends(traceoraPrismaExtension())
  */
-export function traceoraPrismaExtension() {
+export function traceoraPrismaExtension(options: { captureQueryArgs?: boolean } = {}) {
   return {
     name: 'Traceora',
     query: {
@@ -19,24 +20,23 @@ export function traceoraPrismaExtension() {
             const result = await query(args);
             const duration = Date.now() - startTime;
             
-            // Only capture arguments if it's not going to be massively huge.
-            // In a real production environment we might sanitize this!
             let stringifiedArgs = "";
-            try {
-              stringifiedArgs = JSON.stringify(args);
-            } catch (e) {
-              stringifiedArgs = "[Unserializable]";
+            if (options.captureQueryArgs) {
+              try {
+                stringifiedArgs = JSON.stringify(sanitizeTraceData(args));
+              } catch {
+                stringifiedArgs = "[Unserializable]";
+              }
             }
             
             emitTraceEvent({
-              // @ts-ignore - Event type is generic enough
               type: "DATABASE_QUERY",
               source: `Prisma: ${model}.${operation}`,
               duration,
               metadata: {
                 model,
                 operation,
-                args: stringifiedArgs
+                ...(options.captureQueryArgs ? { args: stringifiedArgs } : {})
               }
             });
             

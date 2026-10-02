@@ -6,8 +6,8 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  ChevronDown,
   ChevronRight,
+  ChevronDown,
   Copy,
   ExternalLink,
   Hexagon,
@@ -25,6 +25,24 @@ const sections = [
   { title: 'Guides', items: ['Debug a user flow', 'Production setup', 'Troubleshooting'] },
 ]
 
+const sectionLinks: Record<string, string> = {
+  Introduction: "README.md",
+  Installation: "README.md#quick-start",
+  "Quick start": "examples/react-vite/README.md",
+  "How Traceora works": "docs/README.md",
+  "Trace context": "packages/core/README.md#usage",
+  "Event model": "packages/core/src/types.ts",
+  "@traceora/react": "packages/react/README.md",
+  "@traceora/express": "packages/express/README.md",
+  "@traceora/next": "packages/next/README.md",
+  "@traceora/vite-plugin": "packages/vite-plugin/README.md",
+  "@traceora/node": "packages/node/README.md",
+  "Debug a user flow": "packages/react/README.md#usage",
+  "Production setup": "packages/react/README.md#usage",
+  Troubleshooting: "CONTRIBUTING.md",
+}
+const repository = "https://github.com/zuhaib-dev/traceora/blob/main/"
+
 function Logo() {
   return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link>
 }
@@ -39,7 +57,7 @@ export default function DocsPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [active, setActive] = useState('Introduction')
-  const [version, setVersion] = useState('v1.4')
+  const version = 'v0.4.7'
   const visibleSections = useMemo(() => sections.map((section) => ({ ...section, items: section.items.filter((item) => item.toLowerCase().includes(query.toLowerCase())) })).filter((section) => section.items.length), [query])
 
   return <main className="min-h-screen bg-background text-foreground"><div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />
