@@ -1,67 +1,145 @@
 <div align="center">
-  <h1>Traceora Architecture & Internal Documentation</h1>
-  <p><strong>A deep dive into the architectural notes and specifications for the Traceora intelligence platform.</strong></p>
+  <br/>
+  <img src="../../logo.svg" alt="Traceora" width="80" height="80" />
+  <h1>Architecture & Internal Documentation</h1>
+  <p><strong>A deep dive into how Traceora works under the hood.</strong></p>
+  <br/>
 </div>
 
 ---
 
 ## 🏗️ Architecture Overview
 
-Traceora follows a highly scalable, composable monorepo architecture. 
+Traceora follows a **layered, composable architecture**. The core engine is entirely framework-agnostic — framework adapters (React, Next.js, Express) extend it with bindings specific to their runtime.
 
-```mermaid
-graph TD
-    classDef core fill:#099268,stroke:#fff,stroke-width:2px,color:#fff;
-    classDef adapter fill:#2c2e33,stroke:#5c5f66,stroke-width:1px,color:#fff;
-    
-    A[CORE <br/> Event Engine & Monitors]:::core
-    
-    B[REACT ADAPTER <br/> Frontend]:::adapter
-    C[NEXT.JS ADAPTER <br/> Server]:::adapter
-    D[EXPRESS ADAPTER <br/> Backend APIs]:::adapter
-    
-    A --> B
-    A --> C
-    A --> D
+```
+                    ┌─────────────────────────────┐
+                    │       YOUR APPLICATION       │
+                    └──────────────┬──────────────┘
+                                   │
+              ┌────────────────────┼────────────────────┐
+              │                    │                    │
+     ┌────────▼────────┐  ┌───────▼────────┐  ┌───────▼────────┐
+     │  @traceora/react │  │ @traceora/next │  │@traceora/express│
+     │  ──────────────  │  │ ─────────────  │  │ ──────────────  │
+     │  • Provider      │  │ • NextProvider │  │ • Middleware     │
+     │  • ErrorBoundary │  │ • withTraceora │  │ • AsyncLocal-   │
+     │  • DevTools UI   │  │ • traceAction  │  │   Storage ctx   │
+     │  • useTrace()    │  │ • DB plugins   │  │ • Header inject │
+     └────────┬────────┘  └───────┬────────┘  └───────┬────────┘
+              │                    │                    │
+              └────────────────────┼────────────────────┘
+                                   │
+                    ┌──────────────▼──────────────┐
+                    │       @traceora/core        │
+                    │       ─────────────         │
+                    │  • EventStore (ring buffer)  │
+                    │  • EventEmitter (pub/sub)    │
+                    │  • TraceID correlation       │
+                    │  • fetch / XHR interceptors   │
+                    │  • Error instrumentation      │
+                    │  • Performance monitor        │
+                    └─────────────────────────────┘
 ```
 
-## 📦 Packages Breakdown
+### Data Flow
 
-### 1. `@traceora/core`
-The core package is completely framework agnostic and forms the backbone of Traceora.
-- **`EventStore`**: In-memory ring buffer storage for keeping a history of events efficiently.
-- **`EventEmitter`**: Standardized system to emit events with UUIDs and precise timestamps.
-- **Interceptors**: Safely wraps native APIs like `window.fetch`, `window.onerror`, and `unhandledrejection`.
+1. **Frontend** — `@traceora/core` intercepts `fetch`, `XHR`, `onerror`, and the History API. The React/Next adapter adds component lifecycle events. Everything flows into a shared `EventStore`.
+2. **Backend** — When a traced `fetch` fires, the React adapter attaches a `X-Traceora-TraceId` header. The Express / Next.js middleware picks it up, creates an `AsyncLocalStorage` context, and collects backend events.
+3. **Bridge** — On response, the backend serializes collected events into the `X-Traceora-Events` header. The frontend deserializes them and merges them into the same timeline under the same Trace ID.
+4. **DevTools** — The `<TraceoraDevtools />` overlay reads the `EventStore` in real-time and renders a glassmorphism timeline with filters, search, and one-click IDE jump.
 
-### 2. `@traceora/react`
-The React adapter connects React's rendering lifecycle directly to the core event engine.
-- Tracks `COMPONENT_MOUNT` and `COMPONENT_RENDER` events.
-- Exposes `<TraceoraProvider>` to manage global telemetry context.
-- Exposes `<TraceoraErrorBoundary>` to catch React-specific render crashes beautifully.
-- Contains the sleek `TraceoraDevtools` floating UI overlay.
+---
 
-### 3. `@traceora/vite-plugin`
-The Developer Experience (DX) powerhouse.
-- Analyzes the Abstract Syntax Tree (AST) during the build process.
-- Auto-injects `@traceora/react` hooks into all functional components.
-- Achieves "Zero-Config" automatic tracking so you don't have to rewrite your app.
+## 📦 Package Breakdown
+
+### [`@traceora/core`](../packages/core)
+
+The foundation. No framework dependencies.
+
+| Module | Purpose |
+|---|---|
+| `EventStore` | In-memory ring buffer — keeps the last *N* events efficiently. |
+| `EventEmitter` | Pub/sub system — each event gets a UUID + high-res timestamp. |
+| `setupNetworkInstrumentation()` | Monkey-patches `fetch` and `XHR` to capture request/response pairs. |
+| `setupErrorInstrumentation()` | Hooks `window.onerror` and `unhandledrejection`. |
+| `PerformanceMonitor` | Detects spam renders and rapid duplicate network calls. |
+
+### [`@traceora/react`](../packages/react)
+
+Connects React's lifecycle to the core engine.
+
+| Export | Purpose |
+|---|---|
+| `<TraceoraProvider>` | Initializes core, instruments `fetch`/`XHR`/`History`, shares context. |
+| `<TraceoraErrorBoundary>` | Catches React render crashes → logs to timeline → shows fallback. |
+| `<TraceoraDevtools />` | Floating real-time timeline overlay for development. |
+| `useTrace()` | Manual hook to trace specific user interactions. |
+| `useComponentTrace()` | Injected automatically by the Vite plugin into every component. |
+
+### [`@traceora/vite-plugin`](../packages/vite-plugin)
+
+Zero-config DX magic.
+
+- Runs a Babel pass during Vite's `transform` step.
+- Detects all React functional components via AST analysis.
+- Injects `useComponentTrace("ComponentName")` at the top of each component body.
+- Result: 100% component coverage with zero manual effort.
+
+### [`@traceora/next`](../packages/next)
+
+Full-stack tracing for Next.js App Router.
+
+| Export | Purpose |
+|---|---|
+| `<TraceoraNextProvider>` | Client-side provider — same as React but optimized for Next.js hydration. |
+| `withTraceora()` | Wraps Route Handlers to create a backend trace context. |
+| `traceAction()` | Wraps Server Actions to measure execution time. |
+| `traceoraPrismaExtension()` | Auto-traces every Prisma query within a request. |
+| `traceoraMongoosePlugin` | Auto-traces every Mongoose operation within a request. |
+
+### [`@traceora/express`](../packages/express)
+
+Express middleware adapter.
+
+| Export | Purpose |
+|---|---|
+| `traceora()` | Middleware — reads `X-Traceora-TraceId`, creates `AsyncLocalStorage` context, injects events into response headers. |
+
+### [`@traceora/node`](../packages/node)
+
+Shared backend primitives used by both `@traceora/express` and `@traceora/next`.
+
+| Export | Purpose |
+|---|---|
+| `emitTraceEvent()` | Pushes an event into the current request's trace context. Safe no-op outside a request. |
+| `traceoraPrismaExtension()` | Prisma client extension for automatic query tracing. |
+| `traceoraMongoosePlugin` | Mongoose plugin for automatic operation tracing. |
 
 ---
 
 ## 🗺️ Roadmap
 
-- 🟢 **Phase 1:** Core Engine & Memory Store *(Completed)*
-- 🟢 **Phase 2:** React Bindings *(Completed)*
-- 🟢 **Phase 3:** Auto-Tracking (Vite Plugin) *(Completed)*
-- 🟢 **Phase 4:** Network & Error Intelligence *(Completed)*
-- 🟡 **Phase 5:** Next.js SSR & Server Components *(In Progress)*
-- ⚪ **Phase 6:** Express / Node.js Backend Tracing *(Planned)*
-- ⚪ **Phase 7:** Standalone CLI Dashboard *(Planned)*
+| Status | Phase | Milestone |
+|---|---|---|
+| ✅ | Phase 1 | Core Engine & Memory Store |
+| ✅ | Phase 2 | React Bindings & DevTools UI |
+| ✅ | Phase 3 | Auto-Tracking (Vite Plugin) |
+| ✅ | Phase 4 | Network & Error Intelligence |
+| 🔄 | Phase 5 | Next.js SSR & Server Components |
+| 📋 | Phase 6 | Express / Node.js Backend Tracing |
+| 📋 | Phase 7 | Standalone CLI Dashboard |
 
 ---
 
+## 📄 License
+
+MIT © [Zuhaib Rashid](https://zuhaibrashid.com)
+
 <div align="center">
-  <p><strong>Built by Zuhaib Rashid</strong></p>
-  <a href="https://zuhaibrashid.com">🌍 Portfolio</a> &nbsp; | &nbsp; 
-  <a href="https://github.com/zuhaib-dev">🐙 GitHub</a>
+  <br/>
+  <a href="https://github.com/zuhaib-dev">GitHub</a>&ensp;·&ensp;
+  <a href="https://zuhaibrashid.com">Portfolio</a>&ensp;·&ensp;
+  <a href="https://x.com/xuhaib_x9">Twitter</a>
+  <br/><br/>
 </div>

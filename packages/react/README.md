@@ -1,74 +1,96 @@
 <div align="center">
-  <img src="./logo.svg" alt="Traceora Logo" width="100" height="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
+  <br/>
+  <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
+  <h1>@traceora/react</h1>
+  <p><strong>React bindings, Context Providers & DevTools UI for Traceora.</strong></p>
+
+  <a href="https://www.npmjs.com/package/@traceora/react"><img src="https://img.shields.io/npm/v/@traceora/react.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
+  <a href="https://www.npmjs.com/package/@traceora/react"><img src="https://img.shields.io/npm/dm/@traceora/react?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
+  <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
+  <br/><br/>
 </div>
 
-# @traceora/react
+> Connects React's lifecycle, your network requests, and unhandled errors into a single, comprehensive timeline — with a beautiful floating DevTools overlay.
 
-> React bindings, Context Providers, and UI components for Traceora.
+---
 
-[![npm version](https://img.shields.io/npm/v/@traceora/react.svg?style=flat-square)](https://www.npmjs.com/package/@traceora/react)
-
-Traceora connects React's lifecycle, your network requests, and your unhandled errors into a single, comprehensive timeline.
-
-## Installation
+## 📥 Installation
 
 ```bash
 npm install @traceora/react @traceora/core
 ```
 
-*(Note: We highly recommend also installing `@traceora/vite-plugin` for zero-config auto-tracking of all your components).*
+> **Tip:** Also install [`@traceora/vite-plugin`](../vite-plugin) for zero-config auto-tracking of every component.
 
-## Features
+---
 
-- `<TraceoraProvider>`: Initializes the core engine, instruments `fetch` and `XMLHttpRequest`, intercepts the History API (router tracking), catches global errors, and makes the `EventEmitter` available via React Context.
-- `<TraceoraErrorBoundary>`: A robust error boundary that intercepts React render crashes and logs them to the Traceora timeline before showing a fallback UI.
-- `<TraceoraDevtools />`: A floating, real-time visual timeline that you can drop into your app during development.
-- `useTrace()`: A manual hook to trace specific interactions (like complex button clicks).
+## ✨ Exports
 
-## Basic Usage
+| Export | Type | Description |
+|---|---|---|
+| `<TraceoraProvider>` | Component | Initializes the core engine, instruments `fetch`/`XHR`/History API, catches errors, shares the `EventEmitter` via React Context. |
+| `<TraceoraErrorBoundary>` | Component | Intercepts React render crashes → logs them to the timeline → shows a fallback UI. |
+| `<TraceoraDevtools />` | Component | Floating, real-time visual timeline for development. Drop it in and go. |
+| `useTrace()` | Hook | Manually trace specific interactions (e.g., complex button flows). |
+| `useComponentTrace()` | Hook | Injected automatically by the Vite plugin. Tracks component mount & render. |
 
-1. Wrap your application in the Traceora Provider and Error Boundary:
+---
+
+## 🔧 Usage
+
+### 1. Wrap your application
 
 ```tsx
-import { TraceoraProvider, TraceoraErrorBoundary, TraceoraDevtools } from "@traceora/react";
+import {
+  TraceoraProvider,
+  TraceoraErrorBoundary,
+  TraceoraDevtools,
+} from '@traceora/react';
 
 function App() {
   return (
     <TraceoraProvider>
       <TraceoraErrorBoundary>
         <YourApp />
-        
-        {/* Floating timeline overlay for development */}
-        <TraceoraDevtools />
+        <TraceoraDevtools /> {/* Floating timeline overlay */}
       </TraceoraErrorBoundary>
     </TraceoraProvider>
   );
 }
 ```
 
-2. Trace interactions manually:
+### 2. Trace interactions manually
 
 ```tsx
-import { useTrace } from "@traceora/react";
+import { useTrace } from '@traceora/react';
 
 export function UserProfile() {
   const startTrace = useTrace();
 
   const handleSave = () => {
-    // Links this click and any subsequent API calls to the same Trace ID
-    const trace = startTrace("Save_Profile");
-    
-    // The native window.fetch is already instrumented by TraceoraProvider!
-    fetch('/api/save', { method: 'POST' }); 
+    // Links this click + any subsequent API calls under one Trace ID
+    const trace = startTrace('Save_Profile');
+
+    // fetch is already instrumented by TraceoraProvider
+    fetch('/api/save', { method: 'POST' });
   };
-  
+
   return <button onClick={handleSave}>Save</button>;
 }
 ```
 
 ---
 
-### Author
-**Zuhaib Rashid**
-- 🌍 [zuhaibrashid.com](https://zuhaibrashid.com)
-- 🐙 [GitHub: @zuhaib-dev](https://github.com/zuhaib-dev)
+## 🔗 Related Packages
+
+| Package | Role |
+|---|---|
+| [`@traceora/core`](../core) | The underlying event engine |
+| [`@traceora/vite-plugin`](../vite-plugin) | Auto-injects tracking into every component |
+| [`@traceora/next`](../next) | Next.js-specific integration |
+
+---
+
+<div align="center">
+  <sub>Part of the <a href="https://github.com/zuhaib-dev/traceora">Traceora</a> ecosystem · Built by <a href="https://zuhaibrashid.com">Zuhaib Rashid</a></sub>
+</div>

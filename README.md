@@ -1,79 +1,77 @@
 <div align="center">
-  <img src="./logo.svg" alt="Traceora Logo" width="120" height="120" />
-  
+  <br/>
+  <img src="./logo.svg" alt="Traceora" width="100" height="100" />
   <h1>Traceora</h1>
   <p><strong>Next-Generation Runtime Intelligence & Telemetry for Modern Applications</strong></p>
 
   <p>
-    <a href="https://traceora-web.vercel.app/"><b>Website</b></a> •
-    <a href="./docs/README.md"><b>Architecture Docs</b></a> •
-    <a href="https://www.npmjs.com/package/@traceora/core"><b>NPM</b></a>
+    <a href="https://traceora-web.vercel.app/"><strong>Website</strong></a>&ensp;·&ensp;
+    <a href="./docs/README.md"><strong>Docs</strong></a>&ensp;·&ensp;
+    <a href="https://www.npmjs.com/package/@traceora/core"><strong>NPM</strong></a>&ensp;·&ensp;
+    <a href="https://github.com/zuhaib-dev/traceora/issues"><strong>Issues</strong></a>&ensp;·&ensp;
+    <a href="./CONTRIBUTING.md"><strong>Contributing</strong></a>
   </p>
 
   <p>
-    <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square&color=099268" alt="npm version" /></a>
+    <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square&color=099268&label=core" alt="core version" /></a>&ensp;
+    <a href="https://www.npmjs.com/package/@traceora/react"><img src="https://img.shields.io/npm/v/@traceora/react.svg?style=flat-square&color=099268&label=react" alt="react version" /></a>&ensp;
+    <a href="https://www.npmjs.com/package/@traceora/next"><img src="https://img.shields.io/npm/v/@traceora/next.svg?style=flat-square&color=099268&label=next" alt="next version" /></a>&ensp;
     <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
-    <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/dt/@traceora/core.svg?style=flat-square&color=099268" alt="npm downloads" /></a>
   </p>
+  <br/>
 </div>
 
-<br/>
-
-<div align="center">
+<p align="center">
   <a href="./traceora-showcase.mp4">
-    <img src="./traceora-showcase.jpg" alt="Traceora Showcase" style="border-radius: 12px; max-width: 100%; box-shadow: 0 8px 30px rgba(0,0,0,0.12);" />
+    <img src="./traceora-showcase.jpg" alt="Traceora — Full-Stack DevTools Showcase" width="720" />
   </a>
-</div>
+</p>
 
-<br/>
-
-> **Traceora** is a full-stack runtime intelligence toolkit designed to help developers understand exactly what their applications are doing in production. It reconstructs the exact sequence of events (mounts, renders, clicks, API calls, state changes, and errors) into a beautifully unified timeline.
+> **Stop guessing what your app is doing.** Traceora reconstructs the exact sequence of events — mounts, renders, clicks, API calls, state changes, and errors — into a beautifully unified timeline. From one click on your frontend, trace the entire journey through Next.js Server Actions, Express APIs, and down to your Prisma database queries.
 
 ---
 
-## ✨ God-Tier Features
+## ✨ Features
 
-Traceora is fully reimagined with features that give developers superpowers:
-
-- 🪄 **One-Click IDE Jump**: Instantly open the exact file and line of code where an error occurred in your IDE (VSCode/Cursor) by simply clicking "Open in Editor" directly from the DevTools overlay.
-- 🛑 **Live Network Mocking**: Click "Mock Request" on any API call to intercept and stub network traffic instantly. Force 500 errors or fake JSON responses on the fly without writing a single line of code.
-- 🔗 **God View Waterfall**: Trace a single click from the frontend through Next.js Server Actions, Express APIs, and down to Prisma database queries in one unified, deeply nested timeline.
-- ⚡ **Zero-Config Auto-Tracking**: With our Vite plugin, every component in your app is automatically traced. No manual hooks required.
-- 🌐 **Universal Tracing**: Automatically intercepts `window.fetch`, `XMLHttpRequest`, console errors, and React renders into one sleek glassmorphism UI.
-
----
-
-## 📦 The Ecosystem
-
-Traceora is built as a highly composable monorepo. Dive into the individual packages:
-
-| Package | Version | Description |
+|  | Feature | Description |
 |---|---|---|
-| 🧩 [`@traceora/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@traceora/core?style=flat-square)](https://www.npmjs.com/package/@traceora/core) | The framework-agnostic event engine. Handles network interception, error catching, and the memory store. |
-| ⚛️ [`@traceora/react`](./packages/react) | [![npm](https://img.shields.io/npm/v/@traceora/react?style=flat-square)](https://www.npmjs.com/package/@traceora/react) | React-specific bindings. Includes context providers, error boundaries, and the floating DevTools timeline. |
-| ▲ [`@traceora/next`](./packages/next) | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square)](https://www.npmjs.com/package/@traceora/next) | Next.js App Router integration. Tracks Server Components, Route Handlers, Server Actions, and DB queries. |
-| ⚡ [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square)](https://www.npmjs.com/package/@traceora/vite-plugin) | A custom Babel compiler that automatically injects tracking code into your React components during build. |
-| 🚂 [`@traceora/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square)](https://www.npmjs.com/package/@traceora/express) | Express backend adapter. Injects backend errors straight into your frontend timeline. |
-| 🟢 [`@traceora/node`](./packages/node) | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square)](https://www.npmjs.com/package/@traceora/node) | The shared backend core. Contains agnostic telemetry logic for all server environments. |
+| 🪄 | **One-Click IDE Jump** | Open the exact file & line of an error in VSCode / Cursor directly from the DevTools overlay. |
+| 🛑 | **Live Network Mocking** | Click "Mock Request" on any API call to intercept it. Force 500 errors or fake JSON — zero code. |
+| 🔗 | **God View Waterfall** | Trace a single click from the React UI → Server Actions → Express → Prisma in one nested timeline. |
+| ⚡ | **Zero-Config Auto-Tracking** | The Vite plugin auto-instruments every React component. No manual hooks needed. |
+| 🌐 | **Universal Tracing** | `fetch`, `XMLHttpRequest`, console errors, React renders — all captured in one glassmorphism UI. |
 
 ---
 
-## 🚀 Quick Setup
+## 📦 Ecosystem
 
-Get full runtime intelligence in your application in under 2 minutes.
+| Package | Latest | What it does |
+|---|---|---|
+| [`@traceora/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@traceora/core?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/core) | Framework-agnostic event engine — network interception, error catching, in-memory store. |
+| [`@traceora/react`](./packages/react) | [![npm](https://img.shields.io/npm/v/@traceora/react?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/react) | React bindings — context providers, error boundaries, floating DevTools timeline. |
+| [`@traceora/next`](./packages/next) | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/next) | Next.js App Router — Server Components, Route Handlers, Server Actions, DB queries. |
+| [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — auto-injects tracking into every React component at build time. |
+| [`@traceora/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/express) | Express middleware — injects backend events into the frontend timeline via headers. |
+| [`@traceora/node`](./packages/node) | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/node) | Shared backend core — `AsyncLocalStorage`, Prisma extension, Mongoose plugin. |
 
-<details>
-<summary><b>React + Vite</b></summary>
+---
 
-### 1. Install Dependencies
+## 🚀 Quick Start
+
+Pick your stack and get full runtime intelligence in under 2 minutes.
+
+<details open>
+<summary><h3>React + Vite</h3></summary>
+
+**1 — Install**
 
 ```bash
 npm install @traceora/core @traceora/react @traceora/vite-plugin
 ```
 
-### 2. Configure Vite Plugin
+**2 — Add the Vite plugin** (`vite.config.ts`)
 
-Update your `vite.config.ts`:
+> Place `traceoraPlugin()` **before** the React plugin so it transforms code first.
 
 ```ts
 import { defineConfig } from 'vite';
@@ -85,48 +83,47 @@ export default defineConfig({
 });
 ```
 
-### 3. Wrap your App
-
-Update your `main.tsx`:
+**3 — Wrap your app** (`main.tsx`)
 
 ```tsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
-
-import { TraceoraProvider, TraceoraErrorBoundary, TraceoraDevtools } from '@traceora/react';
+import {
+  TraceoraProvider,
+  TraceoraErrorBoundary,
+  TraceoraDevtools,
+} from '@traceora/react';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <TraceoraProvider>
       <TraceoraErrorBoundary>
         <App />
-        {/* Floating timeline overlay for development */}
-        <TraceoraDevtools />
+        <TraceoraDevtools /> {/* Floating timeline overlay */}
       </TraceoraErrorBoundary>
     </TraceoraProvider>
   </StrictMode>,
 );
 ```
+
+That's it — every component mount, render, network request, and error is now tracked automatically.
+
 </details>
 
 <details>
-<summary><b>Next.js (App Router)</b></summary>
+<summary><h3>Next.js (App Router)</h3></summary>
 
-Traceora handles Server Components, Route Handlers, and Server Actions seamlessly.
-
-### 1. Install Dependencies
+**1 — Install**
 
 ```bash
 npm install @traceora/next
 ```
 
-### 2. Wrap your Layout
-
-Open `app/layout.tsx` and add the provider:
+**2 — Wrap your layout** (`app/layout.tsx`)
 
 ```tsx
-import { TraceoraNextProvider } from "@traceora/next/client";
+import { TraceoraNextProvider } from '@traceora/next/client';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -141,91 +138,103 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-Check out the [Next.js documentation](./packages/next/README.md) for advanced tracking!
+**3 — Trace Route Handlers & Server Actions**
+
+```ts
+// app/api/users/route.ts
+import { withTraceora, emitTraceEvent } from '@traceora/next';
+
+export const GET = withTraceora(async () => {
+  emitTraceEvent({ type: 'STATE_CHANGE', source: 'DB', metadata: { query: 'SELECT * FROM users' } });
+  return Response.json({ users: [] });
+});
+```
+
+→ See the full [Next.js integration guide](./packages/next/README.md).
+
 </details>
 
 <details>
-<summary><b>Express Backend</b></summary>
+<summary><h3>Express Backend</h3></summary>
 
-Seamlessly connect your backend logs to your frontend timeline.
-
-### 1. Install Dependencies
+**1 — Install**
 
 ```bash
 npm install @traceora/express
 ```
 
-### 2. Add Middleware
-
-Add the middleware *before* your routes and expose custom headers:
+**2 — Add middleware** (before your routes)
 
 ```ts
-import express from "express";
-import cors from "cors";
-import { traceora } from "@traceora/express";
-import { emitTraceEvent } from "@traceora/node";
+import express from 'express';
+import cors from 'cors';
+import { traceora } from '@traceora/express';
+import { emitTraceEvent } from '@traceora/node';
 
 const app = express();
 
-app.use(cors({ exposedHeaders: ["X-Traceora-Events"] }));
+app.use(cors({ exposedHeaders: ['X-Traceora-Events'] }));
 app.use(traceora());
 
-app.get("/api/data", (req, res) => {
-  // Instantly inject this backend event into your React DevTools!
+app.get('/api/users', (req, res) => {
   emitTraceEvent({
-    type: "STATE_CHANGE",
-    source: "MySQL",
-    metadata: { query: "SELECT * FROM users" }
+    type: 'STATE_CHANGE',
+    source: 'MySQL',
+    metadata: { query: 'SELECT * FROM users WHERE active = 1' },
   });
-  
   res.json({ ok: true });
 });
 ```
+
+→ See the full [Express integration guide](./packages/express/README.md).
+
 </details>
 
 ---
 
 ## 🛠️ Tech Stack
 
-Traceora is built for performance and developer experience using modern web technologies:
-
-- **TypeScript**: 100% strictly typed codebase for maximum safety.
-- **React 18**: Deep lifecycle bindings and sleek DevTools UI.
-- **Vite & tsup**: Blazing fast ESM/CJS dual-format package bundling.
-- **Babel**: Advanced AST (Abstract Syntax Tree) parsing for zero-config auto-tracking.
-- **pnpm Workspaces**: Lightning-fast monorepo package management.
+| Technology | Role |
+|---|---|
+| **TypeScript** | 100% strictly typed — zero `any` escapes. |
+| **React 18** | Deep lifecycle bindings & DevTools UI. |
+| **Vite + tsup** | Blazing fast ESM / CJS dual-format bundling. |
+| **Babel** | AST parsing for zero-config auto-tracking. |
+| **pnpm Workspaces** | Lightning-fast monorepo management. |
 
 ---
 
 ## 🤝 Contributing
 
-We welcome contributions! To run Traceora locally:
+We love contributions! See the full [Contributing Guide](./CONTRIBUTING.md) to get started, or jump straight in:
 
 ```bash
-# Clone the repository
-git clone https://github.com/zuhaib-dev/traceora.git
-cd traceora
-
-# Install dependencies
+git clone https://github.com/zuhaib-dev/traceora.git && cd traceora
 pnpm install
+pnpm dev          # Build all packages in watch mode
 
-# Run the package builders in watch mode
-pnpm dev
-
-# Run the playground test app (in a separate terminal)
-cd examples/react-vite
-pnpm dev
+# In another terminal
+cd examples/react-vite && pnpm dev
 ```
 
 ---
 
+## 📄 License
+
+MIT © [Zuhaib Rashid](https://zuhaibrashid.com)
+
+---
+
 <div align="center">
-  <img src="https://zuhaib-portfolio-tau.vercel.app/_next/image?url=%2FprofilePic.webp&w=256&q=75" alt="Zuhaib Rashid" width="100" height="100" style="border-radius: 50%; border: 2px solid #099268; margin-bottom: 10px;" />
-  <br />
-  <h3>Built by Zuhaib Rashid</h3>
-  <p><strong>Full-Stack Engineer | MERN & Next.js | Scalable Web Applications | Generative AI & AI Integration</strong></p>
-  <a href="https://zuhaibrashid.com">🌍 Portfolio</a> &nbsp; | &nbsp; 
-  <a href="https://github.com/zuhaib-dev">🐙 GitHub</a> &nbsp; | &nbsp; 
-  <a href="https://x.com/xuhaib_x9">🐦 Twitter / X</a> &nbsp; | &nbsp; 
-  <a href="https://www.linkedin.com/in/zuhaib-rashid-661345318/">💼 LinkedIn</a>
+  <br/>
+  <a href="https://zuhaibrashid.com"><img src="https://zuhaib-portfolio-tau.vercel.app/_next/image?url=%2FprofilePic.webp&w=256&q=75" alt="Zuhaib Rashid" width="80" height="80" style="border-radius: 50%; border: 3px solid #099268;" /></a>
+  <br/><br/>
+  <strong>Built by <a href="https://zuhaibrashid.com">Zuhaib Rashid</a></strong>
+  <br/>
+  <sub>Full-Stack Engineer · MERN & Next.js · Scalable Web Apps · Generative AI</sub>
+  <br/><br/>
+  <a href="https://github.com/zuhaib-dev">GitHub</a>&ensp;·&ensp;
+  <a href="https://x.com/xuhaib_x9">Twitter</a>&ensp;·&ensp;
+  <a href="https://www.linkedin.com/in/zuhaib-rashid-661345318/">LinkedIn</a>
+  <br/><br/>
 </div>
