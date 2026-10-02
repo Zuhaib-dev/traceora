@@ -1,4 +1,5 @@
 import { EventEmitter } from "./EventEmitter";
+import { sanitizeTraceData } from "./types";
 
 /**
  * Zustand Middleware to track state changes
@@ -22,8 +23,7 @@ export const traceoraZustand = (emitter?: EventEmitter, storeName: string = "Zus
         source: storeName,
         metadata: {
           action: "setState",
-          prevState,
-          nextState,
+          stateCapture: "disabled",
         },
       });
     }
@@ -38,9 +38,7 @@ export const traceoraZustand = (emitter?: EventEmitter, storeName: string = "Zus
 export const traceoraRedux = (emitter?: EventEmitter) => (store: any) => (next: any) => (action: any) => {
   const activeEmitter = emitter || (typeof window !== "undefined" ? (window as any).__traceora_emitter : null);
   
-  const prevState = store.getState();
   const result = next(action);
-  const nextState = store.getState();
 
   if (activeEmitter) {
     activeEmitter.emit({
@@ -48,9 +46,8 @@ export const traceoraRedux = (emitter?: EventEmitter) => (store: any) => (next: 
       source: "Redux",
       metadata: {
         action: action.type || "UNKNOWN_ACTION",
-        payload: action.payload,
-        prevState,
-        nextState,
+        payload: sanitizeTraceData(action.payload),
+        stateCapture: "disabled",
       },
     });
   }

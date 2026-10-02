@@ -87,32 +87,38 @@ export class PerformanceMonitor {
 export function setupWebVitals(emitter: EventEmitter) {
   if (typeof window === "undefined") return;
 
-  const emitVital = (metric: any) => {
-    let ratingColor = "#51cf66"; // good
-    if (metric.rating === "needs-improvement") ratingColor = "#fcc419";
-    if (metric.rating === "poor") ratingColor = "#ff6b6b";
-
-    emitter.emit({
-      type: "WEB_VITALS",
-      source: "web-vitals",
-      metadata: {
-        name: metric.name,
-        value: Math.round(metric.value * 100) / 100,
-        rating: metric.rating,
-        delta: Math.round(metric.delta * 100) / 100,
-        id: metric.id,
-        ratingColor
-      }
+  webVitalsSubscribers.add(emitter);
+  if (!webVitalsSetup) {
+    webVitalsSetup = true;
+    import("web-vitals").then(({ onCLS, onLCP, onINP, onTTFB, onFCP }) => {
+      const emitVital = (metric: any) => {
+        let ratingColor = "#51cf66";
+        if (metric.rating === "needs-improvement") ratingColor = "#fcc419";
+        if (metric.rating === "poor") ratingColor = "#ff6b6b";
+        webVitalsSubscribers.forEach(subscriber => subscriber.emit({
+          type: "WEB_VITALS",
+          source: "web-vitals",
+          metadata: {
+            name: metric.name,
+            value: Math.round(metric.value * 100) / 100,
+            rating: metric.rating,
+            delta: Math.round(metric.delta * 100) / 100,
+            id: metric.id,
+            ratingColor,
+          },
+        }));
+      };
+      onCLS(emitVital);
+      onLCP(emitVital);
+      onINP(emitVital);
+      onTTFB(emitVital);
+      onFCP(emitVital);
+    }).catch(() => {
+      webVitalsSetup = false;
     });
-  };
-
-  import("web-vitals").then(({ onCLS, onLCP, onINP, onTTFB, onFCP }) => {
-    onCLS(emitVital);
-    onLCP(emitVital);
-    onINP(emitVital);
-    onTTFB(emitVital);
-    onFCP(emitVital);
-  }).catch(() => {
-    // web-vitals might not be resolvable in all environments, safely ignore
-  });
+  }
+  return () => webVitalsSubscribers.delete(emitter);
 }
+
+const webVitalsSubscribers = new Set<EventEmitter>();
+let webVitalsSetup = false;

@@ -5,7 +5,7 @@ export function setupErrorInstrumentation(emitter: EventEmitter) {
   if (typeof window === "undefined") return;
 
   // Catch unhandled runtime errors
-  window.addEventListener("error", (event) => {
+  const onError = (event: ErrorEvent) => {
     let frames: any[] = [];
     if (event.error) {
       try {
@@ -27,10 +27,10 @@ export function setupErrorInstrumentation(emitter: EventEmitter) {
         frames
       }
     });
-  });
+  };
 
   // Catch unhandled promise rejections
-  window.addEventListener("unhandledrejection", (event) => {
+  const onUnhandledRejection = (event: PromiseRejectionEvent) => {
     let frames: any[] = [];
     if (event.reason instanceof Error) {
       try {
@@ -49,5 +49,12 @@ export function setupErrorInstrumentation(emitter: EventEmitter) {
         frames
       }
     });
-  });
+  };
+
+  window.addEventListener("error", onError);
+  window.addEventListener("unhandledrejection", onUnhandledRejection);
+  return () => {
+    window.removeEventListener("error", onError);
+    window.removeEventListener("unhandledrejection", onUnhandledRejection);
+  };
 }

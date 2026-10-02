@@ -37,8 +37,15 @@ export function setupRouterInstrumentation(emitter: EventEmitter) {
     return result;
   };
 
-  window.addEventListener('popstate', () => {
+  const onPopState = () => {
     const newPath = window.location.pathname + window.location.search;
     emitRouteChange(newPath, 'popstate');
-  });
+  };
+  window.addEventListener('popstate', onPopState);
+
+  return () => {
+    if (history.pushState !== originalPushState) history.pushState = originalPushState;
+    if (history.replaceState !== originalReplaceState) history.replaceState = originalReplaceState;
+    window.removeEventListener('popstate', onPopState);
+  };
 }
