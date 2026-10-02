@@ -201,7 +201,7 @@ app.get('/api/users', (req, res) => {
 | **TypeScript** | 100% strictly typed — zero `any` escapes. |
 | **React 18** | Deep lifecycle bindings & DevTools UI. |
 | **Vite + tsup** | Blazing fast ESM / CJS dual-format bundling. |
-| **Babel** | AST parsing for zero-config auto-tracking. |
+| **Babel** | AST-based instrumentation for supported React component forms. |
 | **pnpm Workspaces** | Lightning-fast monorepo management. |
 
 ---

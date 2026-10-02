@@ -88,7 +88,7 @@ Instrumentation is enabled in development by default. Set `config={{ enabled: tr
 | Package | Role |
 |---|---|
 | [`@traceora/core`](../core) | The underlying event engine |
-| [`@traceora/vite-plugin`](../vite-plugin) | Auto-injects tracking into every component |
+| [`@traceora/vite-plugin`](../vite-plugin) | Build-time instrumentation for supported named function components |
 | [`@traceora/next`](../next) | Next.js-specific integration |
 
 ---

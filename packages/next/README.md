@@ -2,7 +2,7 @@
   <br/>
   <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/next</h1>
-  <p><strong>Full-stack telemetry for Next.js App Router — zero config.</strong></p>
+  <p><strong>Client diagnostics and trace correlation for the Next.js App Router.</strong></p>
 
   <a href="https://www.npmjs.com/package/@traceora/next"><img src="https://img.shields.io/npm/v/@traceora/next.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
   <a href="https://www.npmjs.com/package/@traceora/next"><img src="https://img.shields.io/npm/dm/@traceora/next?style=flat-square&color=099268" alt="downloads" /></a>&ensp;

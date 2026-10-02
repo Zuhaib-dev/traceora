@@ -2,7 +2,7 @@
   <br/>
   <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/express</h1>
-  <p><strong>Full-stack telemetry for Express.js — zero config, zero extra servers.</strong></p>
+  <p><strong>Trace correlation and backend event capture for Express.js.</strong></p>
 
   <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/v/@traceora/express.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
   <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/dm/@traceora/express?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
@@ -10,7 +10,7 @@
   <br/><br/>
 </div>
 
-> Bridges your React frontend and Express backend into one timeline. Backend events appear exactly where they belong — inline with the frontend trace. **No WebSockets, no Redis, no extra infrastructure.**
+> Correlates matching frontend requests with Express-side events through response headers. No WebSocket or Redis service is required; configure CORS and tracing explicitly for your deployment.
 
 ---
 

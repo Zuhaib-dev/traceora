@@ -2,7 +2,7 @@
   <br/>
   <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/vite-plugin</h1>
-  <p><strong>Zero-config auto-tracking for every React component.</strong></p>
+  <p><strong>Build-time instrumentation for supported React components.</strong></p>
 
   <a href="https://www.npmjs.com/package/@traceora/vite-plugin"><img src="https://img.shields.io/npm/v/@traceora/vite-plugin.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
   <a href="https://www.npmjs.com/package/@traceora/vite-plugin"><img src="https://img.shields.io/npm/dm/@traceora/vite-plugin?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
@@ -10,7 +10,7 @@
   <br/><br/>
 </div>
 
-> Don't want to manually add `useComponentTrace("Name")` to hundreds of files? This plugin uses a Babel pass during your Vite build to automatically inject tracking into every React component. **100% coverage, zero manual effort.**
+> The Vite plugin uses Babel during your build to inject `useComponentTrace` into supported named function components. It does not instrument every React component shape; use the hook directly for unsupported forms.
 
 ---
 
@@ -66,8 +66,8 @@ export function Profile() {
 
 The injection happens entirely at build time — your source files are never modified. The result is:
 
-- ✅ Every component mount is tracked
-- ✅ Every re-render is tracked
+- ✅ Mounts and renders are tracked for supported components
+- ✅ Named function declarations, function expressions, and block-bodied arrow functions are supported
 - ✅ Component name is preserved for the DevTools timeline
 - ✅ Zero impact on your source code
 
