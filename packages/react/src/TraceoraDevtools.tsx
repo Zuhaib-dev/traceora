@@ -454,7 +454,16 @@ export const TraceoraDevtools: React.FC = () => {
                         return (
                           <button 
                             className="tr-btn"
-                            onClick={(e) => { e.stopPropagation(); fetch(`/__open-in-editor?file=${encodeURIComponent(fileAndLine)}`); }}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                const response = await fetch(`/__open-in-editor?file=${encodeURIComponent(fileAndLine)}`);
+                                const result = await response.json();
+                                if (!response.ok) window.alert(result.error || "Could not open the source file in an editor.");
+                              } catch {
+                                window.alert("The Vite editor bridge is unavailable. Run the app with @traceora/vite-plugin.");
+                              }
+                            }}
                             style={{ background: "rgba(255,255,255,0.06)", color: "#EDEDED", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}
                           >
                             <CodeIcon /> Editor

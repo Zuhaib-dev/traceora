@@ -1,7 +1,7 @@
 {
   "name": "@traceora/vite-plugin",
-  "version": "0.4.7",
-  "description": "Zero-config auto-tracking plugin for Traceora",
+  "version": "0.4.8",
+  "description": "Build-time instrumentation for supported React components",
   "author": {
     "name": "Zuhaib Rashid",
     "url": "https://zuhaibrashid.com",
@@ -36,16 +36,17 @@
   },
   "peerDependencies": {
     "vite": "^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0",
-    "@traceora/react": "*",
-    "@babel/core": "^7.23.0",
-    "@babel/preset-typescript": "^7.23.0",
-    "@babel/plugin-syntax-jsx": "^7.23.0"
+    "@traceora/react": "workspace:^"
   },
   "dependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/plugin-syntax-jsx": "^7.23.0",
+    "@babel/preset-typescript": "^7.23.0",
     "magic-string": "^0.30.5"
   },
   "devDependencies": {
     "@types/babel__core": "^7.20.5",
+    "@types/node": "^20.0.0",
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"

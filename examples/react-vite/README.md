@@ -46,7 +46,7 @@ Once the playground is running, you can verify:
 | **Auto-Tracking** | Open the Traceora DevTools overlay — every component mount/render is logged automatically. |
 | **Network Tracing** | Trigger any `fetch` call — the request/response pair appears in the timeline. |
 | **Error Boundary** | Throw an error in a component — the error is caught, logged, and a fallback is shown. |
-| **IDE Jump** | Click "Open in Editor" on any error event — it opens the file in VSCode / Cursor. |
+| **IDE Jump** | Click "Editor" on an error event with a local source frame. The Vite dev server opens it in VS Code or Cursor when the editor CLI is available. |
 | **Network Mocking** | Click "Mock Request" on any API call in the timeline to intercept it on the fly. |
 
 ---
@@ -56,7 +56,7 @@ Once the playground is running, you can verify:
 - **Vite** — Dev server with HMR
 - **React 18** — UI framework
 - **TypeScript** — Strict mode enabled
-- **@traceora/vite-plugin** — Auto-instruments all components
+- **@traceora/vite-plugin** — Instruments supported named function components
 
 ---
 

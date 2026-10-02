@@ -75,7 +75,7 @@ The trace handle's `fetch()` method attaches its trace ID to that request. Ordin
 | Package | Role |
 |---|---|
 | [`@traceora/react`](../react) | React bindings & DevTools UI |
-| [`@traceora/vite-plugin`](../vite-plugin) | Zero-config auto-tracking |
+| [`@traceora/vite-plugin`](../vite-plugin) | Build-time instrumentation for supported named function components |
 | [`@traceora/next`](../next) | Next.js App Router integration |
 
 ---

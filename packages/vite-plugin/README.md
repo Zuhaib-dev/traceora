@@ -39,6 +39,8 @@ export default defineConfig({
 });
 ```
 
+During development, the plugin also serves the DevTools' `/__open-in-editor` endpoint. Install the VS Code or Cursor CLI, or set `TRACEORA_EDITOR` to an executable that accepts `--goto <file:line:column>`.
+
 ---
 
 ## ⚙️ How It Works
@@ -70,6 +72,7 @@ The injection happens entirely at build time — your source files are never mod
 - ✅ Named function declarations, function expressions, and block-bodied arrow functions are supported
 - ✅ Component name is preserved for the DevTools timeline
 - ✅ Zero impact on your source code
+- ✅ Error frames can open in VS Code or Cursor during Vite development (install the editor CLI or set `TRACEORA_EDITOR`)
 
 ---
 

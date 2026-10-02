@@ -23,7 +23,6 @@
     "clean": "pnpm --filter \"./packages/**\" run clean"
   },
   "devDependencies": {
-    "@babel/preset-typescript": "^8.0.1",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^7.0.0",
@@ -51,5 +50,5 @@
     "url": "https://github.com/zuhaib-dev/traceora/issues"
   },
   "homepage": "https://traceora-web.vercel.app/",
-  "version": "0.4.7"
+  "version": "0.4.8"
 }

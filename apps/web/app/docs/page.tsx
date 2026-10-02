@@ -57,7 +57,7 @@ export default function DocsPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [active, setActiveState] = useState('Introduction')
-  const version = 'v0.4.7'
+  const version = 'v0.4.8'
   const openSection = (item: string) => {
     setActiveState(item)
     const path = sectionLinks[item]
