@@ -43,7 +43,7 @@ Once the playground is running, you can verify:
 
 | Feature | How to test |
 |---|---|
-| **Auto-Tracking** | Open the Traceora DevTools overlay — every component mount/render is logged automatically. |
+| **Auto-Tracking** | Open the Traceora DevTools overlay — supported named function components are instrumented for mount/render events. |
 | **Network Tracing** | Trigger any `fetch` call — the request/response pair appears in the timeline. |
 | **Error Boundary** | Throw an error in a component — the error is caught, logged, and a fallback is shown. |
 | **IDE Jump** | Click "Editor" on an error event with a local source frame. The Vite dev server opens it in VS Code or Cursor when the editor CLI is available. |
