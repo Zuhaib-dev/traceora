@@ -25,10 +25,13 @@ export function emitTraceEvent(event: Omit<TraceEvent, "id" | "traceId" | "times
 
   context.events.push({
     ...event,
+    source: event.source?.slice(0, 256),
+    metadata: event.metadata ? sanitizeTraceData(event.metadata) as Record<string, unknown> : undefined,
     id: crypto.randomUUID(),
     traceId: context.traceId,
     timestamp: Date.now(),
   });
+  if (context.events.length > 100) context.events.shift();
 }
 
 export function serializeTraceEvents(events: TraceEvent[], maxBytes = 6000) {

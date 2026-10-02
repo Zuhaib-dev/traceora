@@ -4,14 +4,14 @@ import './globals.css'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://traceora-web.vercel.app'),
-  title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
-  description: 'Traceora turns scattered logs into one causally-linked timeline — from a React interaction to the exact database query that followed it.',
+  title: 'Traceora | Runtime Diagnostics for React and Node',
+  description: 'Traceora records browser and backend events in a bounded local timeline, with explicit trace propagation for requests.',
   keywords: ['traceora', 'react', 'express', 'tracing', 'full-stack', 'devtools', 'profiling', 'runtime intelligence'],
   authors: [{ name: 'Zuhaib Rashid', url: 'https://zuhaibrashid.com' }],
   creator: 'Zuhaib Rashid',
   openGraph: {
-    title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
-    description: 'Traceora turns scattered logs into one causally-linked timeline.',
+    title: 'Traceora | Runtime Diagnostics for React and Node',
+    description: 'Inspect browser and backend events in a bounded local timeline.',
     url: 'https://traceora-web.vercel.app',
     siteName: 'Traceora',
     locale: 'en_US',
@@ -27,8 +27,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Traceora | Zero-Config Full-Stack Runtime Intelligence',
-    description: 'Zero-config full-stack runtime intelligence.',
+    title: 'Traceora | Runtime Diagnostics for React and Node',
+    description: 'Inspect browser and backend events with explicit trace propagation.',
     creator: '@xuhaib_x9',
     images: ['/og.jpg'],
   },

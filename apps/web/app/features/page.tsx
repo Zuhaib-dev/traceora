@@ -5,8 +5,8 @@ import { useState } from 'react'
 import { ArrowRight, Check, ChevronRight, Code2, Eye, GitBranch, Hexagon, Menu, Radio, ShieldCheck, Sparkles, X, Zap } from 'lucide-react'
 
 const featureSets = [
-  { id: 'timeline', label: 'Event timeline', eyebrow: '01 / See the whole chain', title: 'One interaction. Every consequence.', body: 'Traceora turns scattered logs into a living timeline, so you can follow a click from browser to database without switching tools.', icon: GitBranch },
-  { id: 'signals', label: 'Signals', eyebrow: '02 / Find the moment', title: 'The useful signal stays loud.', body: 'Filter by user, route, or event and surface the exact moment a flow bends. No dashboard archaeology required.', icon: Radio },
+  { id: 'timeline', label: 'Event timeline', eyebrow: '01 / Inspect runtime events', title: 'See the activity your app records.', body: 'Traceora puts browser and backend events in one local timeline. Use trace.fetch() when you want an interaction and its request to share a trace ID.', icon: GitBranch },
+  { id: 'signals', label: 'Signals', eyebrow: '02 / Narrow the timeline', title: 'Move from noise to event detail.', body: 'Filter by event category and inspect network timings, errors, component lifecycle events, and backend database operations.', icon: Radio },
 ]
 
 function Logo() { return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link> }

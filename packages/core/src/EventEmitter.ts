@@ -1,5 +1,6 @@
 import { TraceEvent } from "./types";
 import { EventStore } from "./EventStore";
+import { sanitizeTraceData } from "./types";
 
 export type TraceHandle = Pick<ReturnType<EventEmitter["startTrace"]>, "traceId" | "emit">;
 
@@ -34,6 +35,8 @@ export class EventEmitter {
   emit(event: Omit<TraceEvent, "id" | "timestamp">) {
     const fullEvent: TraceEvent = {
       ...event,
+      source: event.source?.slice(0, 256),
+      metadata: event.metadata ? sanitizeTraceData(event.metadata) as Record<string, unknown> : undefined,
       id: crypto.randomUUID(),
       timestamp: Date.now(),
     };
