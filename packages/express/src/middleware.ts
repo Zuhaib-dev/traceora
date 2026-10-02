@@ -30,7 +30,7 @@ export function traceora() {
       // Intercept the response headers to inject our events before it gets sent
       const originalSend = res.send;
       
-      // @ts-ignore
+      // Wrap Express send without changing its original overload behavior.
       res.send = function (body: any) {
         try {
           const currentContext = asyncLocalStorage.getStore();

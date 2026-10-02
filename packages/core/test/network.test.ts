@@ -1,107 +1,111 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { setupNetworkInstrumentation } from "../src/network";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { EventEmitter } from "../src/EventEmitter";
 import { EventStore } from "../src/EventStore";
+import { setupNetworkInstrumentation } from "../src/network";
 
-describe("Network Instrumentation", () => {
+describe("Network instrumentation", () => {
   let emitter: EventEmitter;
-  let originalFetch: typeof global.fetch;
-  
+  let fetchMock: ReturnType<typeof vi.fn>;
+  let cleanup: (() => void) | undefined;
+
   beforeEach(() => {
     emitter = new EventEmitter(new EventStore());
-    
-    // Mock global window and fetch
-    originalFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ok: true }), {
+    fetchMock = vi.fn().mockResolvedValue(new Response("{\"ok\":true}", {
       status: 200,
-      headers: new Headers({
-        "content-length": "15"
-      })
+      headers: { "content-length": "11" },
     }));
-    
     vi.stubGlobal("window", {
-      fetch: originalFetch,
-      location: { origin: "http://localhost:3000" }
+      fetch: fetchMock,
+      location: { origin: "http://localhost:3000" },
     });
-    
-    vi.stubGlobal("fetch", originalFetch);
-    vi.stubGlobal("Request", class Request {
-      url: string;
-      method: string;
-      headers: Headers;
-      constructor(url: string, init: any = {}) {
-        this.url = url;
-        this.method = init.method || "GET";
-        this.headers = new Headers(init.headers);
-      }
-    });
-    vi.stubGlobal("Headers", class Headers {
-      private map = new Map<string, string>();
-      constructor(init?: any) {
-        if (init) {
-          if (init instanceof Headers) {
-            init.forEach((v, k) => this.set(k, v));
-          } else {
-            Object.entries(init).forEach(([k, v]) => this.set(k, v as string));
-          }
-        }
-      }
-      set(key: string, value: string) { this.map.set(key.toLowerCase(), value); }
-      get(key: string) { return this.map.get(key.toLowerCase()) || null; }
-      forEach(callback: (value: string, key: string) => void) {
-        this.map.forEach(callback);
-      }
-    });
-    vi.stubGlobal("Response", class Response {
-      status: number;
-      ok: boolean;
-      headers: Headers;
-      private body: string;
-      constructor(body: string, init: any = {}) {
-        this.body = body;
-        this.status = init.status || 200;
-        this.ok = this.status >= 200 && this.status < 300;
-        this.headers = new Headers(init.headers);
-      }
-    });
-
-    setupNetworkInstrumentation(emitter);
   });
 
   afterEach(() => {
+    cleanup?.();
+    cleanup = undefined;
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("should trace fetch requests", async () => {
-    const subscriber = vi.fn();
-    emitter.subscribe(subscriber);
+  it("correlates same-origin requests and omits query strings and bodies by default", async () => {
+    cleanup = setupNetworkInstrumentation(emitter);
 
-    await window.fetch("/api/data", { method: "POST", body: JSON.stringify({ a: 1 }) });
+    await window.fetch("/api/data?session=private", {
+      method: "POST",
+      body: JSON.stringify({ password: "private" }),
+    });
 
-    // Expect 3 events: trace start (USER_INTERACTION), request (NETWORK_REQUEST), response (NETWORK_RESPONSE)
-    expect(subscriber).toHaveBeenCalledTimes(3);
+    const events = emitter.getAll();
+    expect(events.map(event => event.type)).toEqual([
+      "USER_INTERACTION", "NETWORK_REQUEST", "NETWORK_RESPONSE",
+    ]);
+    expect(events[1].metadata).toMatchObject({
+      url: "http://localhost:3000/api/data",
+      method: "POST",
+    });
+    expect(events[1].metadata).not.toHaveProperty("replayConfig");
+    expect(events[1].traceId).toBe(events[0].traceId);
+    expect(events[2].traceId).toBe(events[0].traceId);
+    expect(events[2].metadata).toMatchObject({ status: 200, sizeBytes: 11 });
 
-    const traceEvent = subscriber.mock.calls[0][0];
-    expect(traceEvent.type).toBe("USER_INTERACTION");
-
-    const reqEvent = subscriber.mock.calls[1][0];
-    expect(reqEvent.type).toBe("NETWORK_REQUEST");
-    expect(reqEvent.metadata.url).toBe("http://localhost:3000/api/data");
-    expect(reqEvent.metadata.method).toBe("POST");
-
-    const resEvent = subscriber.mock.calls[2][0];
-    expect(resEvent.type).toBe("NETWORK_RESPONSE");
-    expect(resEvent.metadata.status).toBe(200);
-    expect(resEvent.metadata.sizeBytes).toBe(15);
+    const requestConfig = fetchMock.mock.calls[0][1] as RequestInit;
+    expect(new Headers(requestConfig.headers).get("x-traceora-traceid")).toBe(events[0].traceId);
   });
-  
-  it("should inject trace ID header for same-origin requests", async () => {
-    await window.fetch("/api/data");
-    
-    // originalFetch is called by the patched fetch
-    const fetchCallArgs = (originalFetch as ReturnType<typeof vi.fn>).mock.calls[0];
-    const config = fetchCallArgs[1];
-    
-    expect(config.headers.get("x-traceora-traceid")).toBeTruthy();
+
+  it("reuses a valid incoming trace ID without creating a new interaction", async () => {
+    cleanup = setupNetworkInstrumentation(emitter);
+
+    await window.fetch("/api/data", { headers: { "X-Traceora-TraceId": "trace_existing-1" } });
+
+    expect(emitter.getAll().map(event => event.type)).toEqual(["NETWORK_REQUEST", "NETWORK_RESPONSE"]);
+    expect(emitter.getAll().every(event => event.traceId === "trace_existing-1")).toBe(true);
+  });
+
+  it("only propagates trace IDs to explicitly allowed external origins", async () => {
+    cleanup = setupNetworkInstrumentation(emitter, { allowedTracingOrigins: ["https://api.example.com"] });
+
+    await window.fetch("https://api.example.com/data");
+    await window.fetch("https://api.example.com.attacker.invalid/data");
+
+    const firstHeaders = new Headers(fetchMock.mock.calls[0][1]?.headers);
+    const secondHeaders = new Headers(fetchMock.mock.calls[1][1]?.headers);
+    expect(firstHeaders.get("x-traceora-traceid")).toBeTruthy();
+    expect(secondHeaders.has("x-traceora-traceid")).toBe(false);
+  });
+
+  it("sanitizes opt-in request bodies before storing them", async () => {
+    cleanup = setupNetworkInstrumentation(emitter, { captureRequestBodies: true });
+
+    await window.fetch("/api/login", {
+      method: "POST",
+      body: JSON.stringify({ password: "private", name: "Ari" }),
+    });
+
+    const replayConfig = emitter.getAll().find(event => event.type === "NETWORK_REQUEST")?.metadata?.replayConfig as { body: string };
+    expect(replayConfig.body).toContain("[REDACTED]");
+    expect(replayConfig.body).not.toContain("private");
+  });
+
+  it("records failed requests and rethrows the original error", async () => {
+    const networkError = new TypeError("offline");
+    fetchMock.mockRejectedValueOnce(networkError);
+    cleanup = setupNetworkInstrumentation(emitter);
+
+    await expect(window.fetch("/api/data")).rejects.toBe(networkError);
+    expect(emitter.getAll().at(-1)).toMatchObject({
+      type: "NETWORK_ERROR",
+      metadata: { error: "offline" },
+    });
+  });
+
+  it("restores fetch when the instrumentation disposer runs", async () => {
+    cleanup = setupNetworkInstrumentation(emitter);
+    const wrappedFetch = window.fetch;
+
+    cleanup?.();
+    cleanup = undefined;
+
+    expect(window.fetch).toBe(fetchMock);
+    expect(window.fetch).not.toBe(wrappedFetch);
   });
 });

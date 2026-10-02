@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useRef } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { TraceEvent } from "@traceora/core";
 import { useTraceora } from "./TraceoraProvider";
 
@@ -55,7 +55,9 @@ export const TraceoraDevtools: React.FC = () => {
           };
         }
       }
-    } catch (e) {}
+    } catch {
+      // Local storage may be unavailable.
+    }
 
     setIconPos(initialPos);
     
@@ -100,7 +102,9 @@ export const TraceoraDevtools: React.FC = () => {
       // Save position to localStorage
       setIconPos(currentPos => {
         if (currentPos) {
-          try { localStorage.setItem('traceora-icon-pos', JSON.stringify(currentPos)); } catch(e) {}
+          try { localStorage.setItem('traceora-icon-pos', JSON.stringify(currentPos)); } catch {
+            // Local storage may be unavailable.
+          }
         }
         return currentPos;
       });
@@ -426,7 +430,7 @@ export const TraceoraDevtools: React.FC = () => {
                       
                       {isNetwork && !!ev.metadata?.url && (
                         <div className="tr-mono" style={{ color: "#A1A1AA", fontSize: "11px", wordBreak: "break-all", marginBottom: "4px", lineHeight: 1.4 }}>
-                           {String(ev.metadata.url).replace(/^https?:\/\/[^\/]+/, '') || String(ev.metadata.url)}
+                           {String(ev.metadata.url).replace(/^https?:\/\/[^/]+/, '') || String(ev.metadata.url)}
                         </div>
                       )}
 
@@ -449,7 +453,7 @@ export const TraceoraDevtools: React.FC = () => {
                         if (!isError || !ev.metadata || !Array.isArray(ev.metadata.frames) || ev.metadata.frames.length === 0) return null;
                         const firstAppFrame = ev.metadata.frames.find((f: any) => f.fileName && !f.fileName.includes('node_modules') && !f.fileName.includes('react-dom'));
                         if (!firstAppFrame || !firstAppFrame.fileName) return null;
-                        const cleanFileName = String(firstAppFrame.fileName).replace(/^https?:\/\/[^\/]+\/?/, '');
+                        const cleanFileName = String(firstAppFrame.fileName).replace(/^https?:\/\/[^/]+\/?/, '');
                         const fileAndLine = `${cleanFileName}:${firstAppFrame.lineNumber || 1}:${firstAppFrame.columnNumber || 1}`;
                         return (
                           <button 
@@ -480,7 +484,9 @@ export const TraceoraDevtools: React.FC = () => {
                               const url = new URL(ev.metadata!.url as string, window.location.origin);
                               (window as any).__TRACEORA_MOCKS__[url.pathname] = { status: 200, body: { mocked: true } };
                               alert(`Mock injected for ${url.pathname}`);
-                            } catch (err) {}
+                            } catch {
+                              window.alert("Could not create a mock for this request URL.");
+                            }
                           }}
                           style={{ background: "rgba(255,255,255,0.06)", color: "#EDEDED", padding: "4px 8px", borderRadius: "6px", fontSize: "11px", border: "1px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", gap: "4px", cursor: "pointer" }}
                         >

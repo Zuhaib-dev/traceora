@@ -6,13 +6,15 @@ export { emitTraceEvent, traceoraPrismaExtension, traceoraMongoosePlugin };
 /**
  * Wraps a Next.js API Route handler to trace it and inject backend events.
  */
-export function withTraceora(handler: Function) {
-  return async function (req: Request, ...args: any[]) {
+export function withTraceora<Req extends Request, Args extends unknown[]>(
+  handler: (req: Req, ...args: Args) => Response | Promise<Response>,
+): (req: Req, ...args: Args) => Promise<Response> {
+  return async function (req: Req, ...args: Args) {
     const requestedTraceId = req.headers.get("x-traceora-traceid");
     const traceId = requestedTraceId && /^[A-Za-z0-9_-]{1,128}$/.test(requestedTraceId) ? requestedTraceId : null;
 
     if (!traceId) {
-      return handler(req, ...args);
+      return await handler(req, ...args);
     }
 
     const context: TraceoraContext = {
@@ -21,8 +23,7 @@ export function withTraceora(handler: Function) {
     };
 
     return asyncLocalStorage.run(context, async () => {
-      try {
-        const response: Response = await handler(req, ...args);
+      const response: Response = await handler(req, ...args);
         
         // Next.js Response objects are immutable, so we need to clone them to add headers
         // But only if we have events to send back!
@@ -39,10 +40,7 @@ export function withTraceora(handler: Function) {
           }
         }
         
-        return response;
-      } catch (error) {
-        throw error;
-      }
+      return response;
     });
   };
 }

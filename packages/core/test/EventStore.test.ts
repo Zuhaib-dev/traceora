@@ -51,4 +51,17 @@ describe("EventStore", () => {
 
     expect(store.getAll()).toHaveLength(1);
   });
+
+  it("should retain only the newest events when the configured limit is reached", () => {
+    const boundedStore = new EventStore(2);
+    boundedStore.add({ id: "1", type: "APP_START", timestamp: 1 });
+    boundedStore.add({ id: "2", type: "APP_START", timestamp: 2 });
+    boundedStore.add({ id: "3", type: "APP_START", timestamp: 3 });
+
+    expect(boundedStore.getAll().map(event => event.id)).toEqual(["2", "3"]);
+  });
+
+  it.each([0, -1, 1.5, Number.NaN])("should reject invalid event limits (%s)", limit => {
+    expect(() => new EventStore(limit)).toThrow(RangeError);
+  });
 });

@@ -17,13 +17,13 @@ export function traceoraMongoosePlugin(schema: any, options: { captureQueryArgs?
 
   for (const operation of operations) {
     // Pre hook to start timer
-    schema.pre(operation, function (this: any, next: Function) {
+    schema.pre(operation, function (this: any, next: () => void) {
       this._traceoraStartTime = Date.now();
       next();
     });
 
     // Post hook to emit event
-    schema.post(operation, function (this: any, res: any, next: Function) {
+    schema.post(operation, function (this: any, res: any, next: () => void) {
       if (this._traceoraStartTime) {
         const duration = Date.now() - this._traceoraStartTime;
         

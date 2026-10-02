@@ -44,8 +44,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
     const method = config?.method || (resource instanceof Request ? resource.method : "GET");
     const displayUrl = safeUrl(url);
     
-    let headers: Headers;
-    headers = new Headers(resource instanceof Request ? resource.headers : undefined);
+    const headers = new Headers(resource instanceof Request ? resource.headers : undefined);
     new Headers(config?.headers).forEach((value, key) => headers.set(key, value));
     const suppliedTraceId = headers.get("X-Traceora-TraceId");
     const trace = isTraceId(suppliedTraceId)
@@ -224,7 +223,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       _traceora_headers?: Record<string, string>;
     }
 
-    // @ts-ignore - we are patching a method that has multiple overloads
+    // Wrap the overloaded method while retaining its original implementation.
     XMLHttpRequest.prototype.open = function (method: string, url: string | URL, ...args: any[]) {
       const xhr = this as TraceoraXMLHttpRequest;
       xhr._traceora_method = method;
@@ -234,7 +233,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
       
       xhr._traceora_trace = undefined;
 
-      // @ts-ignore
+      // @ts-expect-error Preserve the platform overload arguments when delegating.
       return originalXhrOpen!.apply(this, [method, url, ...args]);
     };
 
@@ -277,7 +276,9 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
               return false;
             });
           }
-        } catch (e) {}
+        } catch {
+          // Invalid URLs cannot receive a propagated trace ID.
+        }
 
         if (shouldInject && (!xhr._traceora_headers || !xhr._traceora_headers["x-traceora-traceid"])) {
           originalXhrSetRequestHeader!.apply(this, ["X-Traceora-TraceId", activeTrace.traceId]);
@@ -356,7 +357,7 @@ export function setupNetworkInstrumentation(emitter: EventEmitter, instrumentati
         xhr.addEventListener("timeout", handleError, { once: true });
       }
 
-      // @ts-ignore
+      // @ts-expect-error Preserve the platform overload arguments when delegating.
       return originalXhrSend!.apply(this, args);
     };
   }
