@@ -1,34 +1,49 @@
 <div align="center">
-  <img src="./logo.svg" alt="Traceora Logo" width="100" height="100" style="border-radius: 20px; box-shadow: 0 8px 24px rgba(9, 146, 104, 0.3);" />
-</div>
-
-<div align="center">
+  <br/>
+  <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/next</h1>
-  <p><strong>Zero-Config Full-Stack Telemetry for Next.js App Router</strong></p>
+  <p><strong>Full-stack telemetry for Next.js App Router — zero config.</strong></p>
 
-  [![npm version](https://img.shields.io/npm/v/@traceora/next.svg?style=flat-square)](https://www.npmjs.com/package/@traceora/next)
+  <a href="https://www.npmjs.com/package/@traceora/next"><img src="https://img.shields.io/npm/v/@traceora/next.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
+  <a href="https://www.npmjs.com/package/@traceora/next"><img src="https://img.shields.io/npm/dm/@traceora/next?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
+  <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
+  <br/><br/>
 </div>
 
-<hr />
+> Seamlessly bridges **Client Components**, **Server Components**, **Route Handlers**, and **Server Actions** into one unified timeline. If it runs in your Next.js app, Traceora can trace it.
 
-## What is it?
+---
 
-`@traceora/next` brings the power of Traceora to the Next.js ecosystem. It seamlessly bridges Client Components, Server Components, Route Handlers (API Routes), and Server Actions into one unified, beautiful timeline.
-
-## Installation
+## 📥 Installation
 
 ```bash
 npm install @traceora/next
 ```
 
-## Quick Start
+---
 
-### 1. The Client Provider (App Router)
+## ✨ Exports
 
-Wrap your `app/layout.tsx` in the `<TraceoraNextProvider>`. This automatically enables frontend tracing, Network (fetch/XHR) tracking, Router tracking, and adds the floating DevTools timeline during development.
+| Export | Type | Description |
+|---|---|---|
+| `<TraceoraNextProvider>` | Client Component | Frontend provider — initializes tracing, instruments `fetch`/`XHR`, adds DevTools overlay. |
+| `withTraceora()` | HOF | Wraps Route Handlers to establish a backend trace context and inject events into the response. |
+| `traceAction()` | HOF | Wraps Server Actions to measure execution time and link them to the frontend trace. |
+| `emitTraceEvent()` | Function | Manually emit a backend event within a traced request. |
+| `traceoraPrismaExtension()` | Prisma Extension | Auto-traces every Prisma query within a request. |
+| `traceoraMongoosePlugin` | Mongoose Plugin | Auto-traces every Mongoose operation within a request. |
+
+---
+
+## 🔧 Usage
+
+### 1. Client Provider
+
+Wrap your root layout to enable frontend tracing:
 
 ```tsx
-import { TraceoraNextProvider } from "@traceora/next/client";
+// app/layout.tsx
+import { TraceoraNextProvider } from '@traceora/next/client';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -43,55 +58,78 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-### 2. Tracing Route Handlers (API Routes)
+### 2. Trace Route Handlers
 
-Use `withTraceora` to automatically intercept frontend requests, establish a trace context, and inject backend events back to the browser timeline.
+Wrap your API routes with `withTraceora` to bridge backend events to the frontend:
 
-```tsx
+```ts
 // app/api/users/route.ts
-import { NextResponse } from "next/server";
-import { withTraceora, emitTraceEvent } from "@traceora/next";
+import { NextResponse } from 'next/server';
+import { withTraceora, emitTraceEvent } from '@traceora/next';
 
 export const GET = withTraceora(async (req: Request) => {
-  // Manually emit an event
   emitTraceEvent({
-    type: "STATE_CHANGE",
-    source: "Next.js API",
-    metadata: { info: "Fetching users..." }
+    type: 'STATE_CHANGE',
+    source: 'Next.js API',
+    metadata: { info: 'Fetching users...' },
   });
 
   return NextResponse.json({ users: [] });
 });
 ```
 
-### 3. Tracing Server Actions
+### 3. Trace Server Actions
 
-Wrap your Server Actions with `traceAction` to measure their exact execution time.
+Wrap Server Actions with `traceAction` to capture execution time:
 
-```tsx
-"use server";
-import { traceAction } from "@traceora/next";
+```ts
+'use server';
+import { traceAction } from '@traceora/next';
 
-export const createUser = traceAction("createUserAction", async (data: any) => {
-  // Action logic here...
+export const createUser = traceAction('createUserAction', async (data: any) => {
+  // Your action logic...
   return { success: true };
 });
 ```
 
-### 4. Database Auto-Tracking (Prisma & Mongoose)
+### 4. Auto-Track Database Queries
 
-Just like the Express adapter, `@traceora/next` exports plugins for your ORM so you don't even have to manually emit database queries!
+Plug in your ORM — every query is traced automatically:
 
-```typescript
-// Prisma
-import { PrismaClient } from "@prisma/client";
-import { traceoraPrismaExtension } from "@traceora/next";
+<details>
+<summary><strong>Prisma</strong></summary>
+
+```ts
+import { PrismaClient } from '@prisma/client';
+import { traceoraPrismaExtension } from '@traceora/next';
 
 const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
+```
+</details>
 
-// Mongoose
-import mongoose from "mongoose";
-import { traceoraMongoosePlugin } from "@traceora/next";
+<details>
+<summary><strong>Mongoose</strong></summary>
+
+```ts
+import mongoose from 'mongoose';
+import { traceoraMongoosePlugin } from '@traceora/next';
 
 mongoose.plugin(traceoraMongoosePlugin);
 ```
+</details>
+
+---
+
+## 🔗 Related Packages
+
+| Package | Role |
+|---|---|
+| [`@traceora/core`](../core) | The underlying event engine |
+| [`@traceora/react`](../react) | React bindings (used internally by the Next.js provider) |
+| [`@traceora/node`](../node) | Shared backend primitives (`AsyncLocalStorage`, DB plugins) |
+
+---
+
+<div align="center">
+  <sub>Part of the <a href="https://github.com/zuhaib-dev/traceora">Traceora</a> ecosystem · Built by <a href="https://zuhaibrashid.com">Zuhaib Rashid</a></sub>
+</div>
