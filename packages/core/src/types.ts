@@ -30,7 +30,11 @@ export interface TraceEvent {
 
 export function sanitizeTraceData(value: unknown, depth = 0): unknown {
   if (depth > 5) return "[Truncated]";
-  if (typeof value === "string") return value.slice(0, 2048);
+  if (typeof value === "string") {
+    return value.slice(0, 2048)
+      .replace(/\b(Bearer|Basic)\s+[^\s"'`]+/gi, "$1 [REDACTED]")
+      .replace(/(["']?(?:authorization|cookie|token|secret|password|credential|api[-_]?key|email|phone|ssn)["']?\s*[:=]\s*)("[^"]*"|'[^']*'|[^\s,;]+)/gi, "$1[REDACTED]");
+  }
   if (Array.isArray(value)) return value.slice(0, 100).map(item => sanitizeTraceData(item, depth + 1));
   if (value && typeof value === "object") {
     const result: Record<string, unknown> = {};
