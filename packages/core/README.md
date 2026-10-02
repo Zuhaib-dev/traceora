@@ -63,7 +63,6 @@ new PerformanceMonitor(emitter);
 
 // 5. Manually trace a flow
 const trace = emitter.startTrace('User_Login');
-trace.emit({ type: 'USER_INTERACTION', source: 'Submit_Button' });
 await trace.fetch('/api/login', { method: 'POST' });
 ```
 

@@ -56,7 +56,7 @@ export function traceAction<T extends (...args: any[]) => any>(
   onTrace?: (events: TraceEvent[]) => void,
 ): T {
   return (async (...args: Parameters<T>) => {
-    const context: TraceoraContext = {
+    const context = asyncLocalStorage.getStore() ?? {
       traceId: `trace_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`,
       events: [],
     };

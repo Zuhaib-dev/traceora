@@ -23,19 +23,21 @@ export function setupRouterInstrumentation(emitter: EventEmitter) {
     }
   };
 
-  history.pushState = function (...args) {
+  const wrappedPushState = function (this: History, ...args: Parameters<History["pushState"]>) {
     const result = originalPushState.apply(this, args);
     const newPath = window.location.pathname + window.location.search;
     emitRouteChange(newPath, 'push');
     return result;
   };
+  history.pushState = wrappedPushState;
 
-  history.replaceState = function (...args) {
+  const wrappedReplaceState = function (this: History, ...args: Parameters<History["replaceState"]>) {
     const result = originalReplaceState.apply(this, args);
     const newPath = window.location.pathname + window.location.search;
     emitRouteChange(newPath, 'replace');
     return result;
   };
+  history.replaceState = wrappedReplaceState;
 
   const onPopState = () => {
     const newPath = window.location.pathname + window.location.search;
@@ -44,8 +46,8 @@ export function setupRouterInstrumentation(emitter: EventEmitter) {
   window.addEventListener('popstate', onPopState);
 
   return () => {
-    if (history.pushState !== originalPushState) history.pushState = originalPushState;
-    if (history.replaceState !== originalReplaceState) history.replaceState = originalReplaceState;
+    if (history.pushState === wrappedPushState) history.pushState = originalPushState;
+    if (history.replaceState === wrappedReplaceState) history.replaceState = originalReplaceState;
     window.removeEventListener('popstate', onPopState);
   };
 }
