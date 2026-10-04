@@ -21,7 +21,8 @@
     "test:watch": "vitest",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"**/*.{ts,tsx,md,json}\"",
-    "clean": "pnpm --filter \"./packages/**\" run clean"
+    "clean": "pnpm --filter \"./packages/**\" run clean",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
@@ -29,6 +30,8 @@
     "@typescript-eslint/parser": "^7.0.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.0",
     "prettier": "^3.2.5",
     "tsup": "^8.0.2",
     "typescript": "^5.3.3",
@@ -51,5 +54,14 @@
     "url": "https://github.com/zuhaib-dev/traceora/issues"
   },
   "homepage": "https://traceora-web.vercel.app/",
-  "version": "0.4.8"
+  "version": "0.4.8",
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{md,json}": [
+      "prettier --write"
+    ]
+  }
 }
