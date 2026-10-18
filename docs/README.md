@@ -1,145 +1,45 @@
-<div align="center">
-  <br/>
-  <img src="../../logo.svg" alt="Traceora" width="80" height="80" />
-  <h1>Architecture & Internal Documentation</h1>
-  <p><strong>A deep dive into how Traceora works under the hood.</strong></p>
-  <br/>
-</div>
+# Traceora architecture and capabilities
 
----
+Traceora is a local-first runtime diagnostics toolkit for React, Next.js, Express, and Node.js. Its core records a bounded event timeline in the application; framework integrations add events and UI. Traceora does not require a hosted service.
 
-## 🏗️ Architecture Overview
+## How events flow
 
-Traceora follows a **layered, composable architecture**. The core engine is entirely framework-agnostic — framework adapters (React, Next.js, Express) extend it with bindings specific to their runtime.
+1. `@traceora/core` provides the event model, bounded store, network and error instrumentation, diagnostic reports, and OpenTelemetry conversion.
+2. `@traceora/react` initializes browser instrumentation, exposes trace context, records React profiler timings, and renders the DevTools timeline.
+3. `@traceora/vite-plugin` can instrument supported named function components. It does not instrument every JSX element or every possible component form.
+4. For an explicitly correlated browser request, create a trace and use its `trace.fetch()` method. The Express or Next Route Handler integration reads the trace header, gathers server events, and returns them in a response header for the browser timeline.
+5. Export a sanitized report for offline review or attach it to Playwright test results. Reports can also be imported into DevTools.
 
-```
-                    ┌─────────────────────────────┐
-                    │       YOUR APPLICATION       │
-                    └──────────────┬──────────────┘
-                                   │
-              ┌────────────────────┼────────────────────┐
-              │                    │                    │
-     ┌────────▼────────┐  ┌───────▼────────┐  ┌───────▼────────┐
-     │  @traceora/react │  │ @traceora/next │  │@traceora/express│
-     │  ──────────────  │  │ ─────────────  │  │ ──────────────  │
-     │  • Provider      │  │ • NextProvider │  │ • Middleware     │
-     │  • ErrorBoundary │  │ • withTraceora │  │ • AsyncLocal-   │
-     │  • DevTools UI   │  │ • traceAction  │  │   Storage ctx   │
-     │  • useTrace()    │  │ • DB plugins   │  │ • Header inject │
-     └────────┬────────┘  └───────┬────────┘  └───────┬────────┘
-              │                    │                    │
-              └────────────────────┼────────────────────┘
-                                   │
-                    ┌──────────────▼──────────────┐
-                    │       @traceora/core        │
-                    │       ─────────────         │
-                    │  • EventStore (ring buffer)  │
-                    │  • EventEmitter (pub/sub)    │
-                    │  • TraceID correlation       │
-                    │  • fetch / XHR interceptors   │
-                    │  • Error instrumentation      │
-                    │  • Performance monitor        │
-                    └─────────────────────────────┘
-```
+Correlation is opt-in at the request boundary: unrelated events and requests are not automatically joined into one trace. Server Action capture is server-local unless the application forwards its events through a callback.
 
-### Data Flow
+## Packages
 
-1. **Frontend** — `@traceora/core` intercepts `fetch`, `XHR`, `onerror`, and the History API. The React/Next adapter adds component lifecycle events. Everything flows into a shared `EventStore`.
-2. **Backend** — When a traced `fetch` fires, the React adapter attaches a `X-Traceora-TraceId` header. The Express / Next.js middleware picks it up, creates an `AsyncLocalStorage` context, and collects backend events.
-3. **Bridge** — On response, the backend serializes collected events into the `X-Traceora-Events` header. The frontend deserializes them and merges them into the same timeline under the same Trace ID.
-4. **DevTools** — The `<TraceoraDevtools />` overlay reads the `EventStore` in real-time and renders a glassmorphism timeline with filters, search, and one-click IDE jump.
+| Package                                            | Purpose                                                                                                                                                                 |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`@traceora/core`](../packages/core)               | Framework-independent event store, network/error instrumentation, diagnostic report parsing/creation, performance heuristics, and OpenTelemetry span conversion/export. |
+| [`@traceora/react`](../packages/react)             | React providers, error boundary, DevTools timeline, trace hooks, profiler timings, report import/export, and performance insights.                                      |
+| [`@traceora/vite-plugin`](../packages/vite-plugin) | Babel transform for supported named function components.                                                                                                                |
+| [`@traceora/next`](../packages/next)               | Next.js client provider, Route Handler wrapper, and server-local `traceAction` capture.                                                                                 |
+| [`@traceora/express`](../packages/express)         | Express middleware for incoming trace IDs and response event propagation.                                                                                               |
+| [`@traceora/node`](../packages/node)               | Request-scoped event emission and optional Prisma/Mongoose query instrumentation.                                                                                       |
+| [`@traceora/playwright`](../packages/playwright)   | Attach a sanitized browser report to failed/flaky Playwright tests.                                                                                                     |
 
----
+## Diagnostic reports and privacy
 
-## 📦 Package Breakdown
+Reports are versioned JSON snapshots intended for sharing, offline review, and CI artifacts. They are sanitized before export and bounded to avoid unbounded attachments. Treat any captured metadata as application data: leave request body/header capture disabled unless the data is safe to retain. Traceora stores events in memory by default and does not upload them to a Traceora service.
 
-### [`@traceora/core`](../packages/core)
+## State and performance tools
 
-The foundation. No framework dependencies.
+Use `instrumentStore` to wrap a Redux-like or Zustand-like store and emit sanitized state-diff events through a caller-provided snapshot function. This generic adapter avoids coupling core to either state library. React Profiler measurements and event timings feed heuristic suggestions; these are investigation clues tied to evidence, not a diagnosis or an automatic fix.
 
-| Module | Purpose |
-|---|---|
-| `EventStore` | Bounded in-memory buffer — keeps the latest 1,000 events by default. |
-| `EventEmitter` | Pub/sub system — each event gets a UUID + high-res timestamp. |
-| `setupNetworkInstrumentation()` | Monkey-patches `fetch` and `XHR` to capture request/response pairs. |
-| `setupErrorInstrumentation()` | Hooks `window.onerror` and `unhandledrejection`. |
-| `PerformanceMonitor` | Detects spam renders and rapid duplicate network calls. |
+## OpenTelemetry
 
-### [`@traceora/react`](../packages/react)
+Core can convert Traceora events to OpenTelemetry-compatible span objects and can load span-shaped data into the local timeline. The exporter adapter is an integration point; configure your own OpenTelemetry SDK/export pipeline when sending telemetry to an external collector.
 
-Connects React's lifecycle to the core engine.
+## Development
 
-| Export | Purpose |
-|---|---|
-| `<TraceoraProvider>` | Initializes core, instruments `fetch`/`XHR`/`History`, shares context. |
-| `<TraceoraErrorBoundary>` | Catches React render crashes → logs to timeline → shows fallback. |
-| `<TraceoraDevtools />` | Floating real-time timeline overlay for development. |
-| `useTrace()` | Manual hook to trace specific user interactions. |
-| `useComponentTrace()` | Injected by the Vite plugin into supported named function components with block bodies. |
+See each package README for installation and usage. The repository is a pnpm workspace. Package versions are maintained independently and should be updated together when preparing a release.
 
-### [`@traceora/vite-plugin`](../packages/vite-plugin)
-
-Zero-config DX magic.
-
-- Runs a Babel pass during Vite's `transform` step.
-- Detects all React functional components via AST analysis.
-- Injects `useComponentTrace("ComponentName")` at the top of each component body.
-- Result: 100% component coverage with zero manual effort.
-
-### [`@traceora/next`](../packages/next)
-
-Full-stack tracing for Next.js App Router.
-
-| Export | Purpose |
-|---|---|
-| `<TraceoraNextProvider>` | Client-side provider — same as React but optimized for Next.js hydration. |
-| `withTraceora()` | Wraps Route Handlers to create a backend trace context. |
-| `traceAction()` | Collects server-local action events; an `onTrace` callback is needed to access them. |
-| `traceoraPrismaExtension()` | Auto-traces every Prisma query within a request. |
-| `traceoraMongoosePlugin` | Auto-traces every Mongoose operation within a request. |
-
-### [`@traceora/express`](../packages/express)
-
-Express middleware adapter.
-
-| Export | Purpose |
-|---|---|
-| `traceora()` | Middleware — reads `X-Traceora-TraceId`, creates `AsyncLocalStorage` context, injects events into response headers. |
-
-### [`@traceora/node`](../packages/node)
-
-Shared backend primitives used by both `@traceora/express` and `@traceora/next`.
-
-| Export | Purpose |
-|---|---|
-| `emitTraceEvent()` | Pushes an event into the current request's trace context. Safe no-op outside a request. |
-| `traceoraPrismaExtension()` | Prisma client extension for automatic query tracing. |
-| `traceoraMongoosePlugin` | Mongoose plugin for automatic operation tracing. |
-
----
-
-## 🗺️ Roadmap
-
-| Status | Phase | Milestone |
-|---|---|---|
-| ✅ | Phase 1 | Core Engine & Memory Store |
-| ✅ | Phase 2 | React Bindings & DevTools UI |
-| ✅ | Phase 3 | Auto-Tracking (Vite Plugin) |
-| ✅ | Phase 4 | Network & Error Intelligence |
-| 🔄 | Phase 5 | Next.js SSR & Server Components |
-| 📋 | Phase 6 | Express / Node.js Backend Tracing |
-| 📋 | Phase 7 | Standalone CLI Dashboard |
-
----
-
-## 📄 License
+## License
 
 MIT © [Zuhaib Rashid](https://zuhaibrashid.com)
-
-<div align="center">
-  <br/>
-  <a href="https://github.com/zuhaib-dev">GitHub</a>&ensp;·&ensp;
-  <a href="https://zuhaibrashid.com">Portfolio</a>&ensp;·&ensp;
-  <a href="https://x.com/xuhaib_x9">Twitter</a>
-  <br/><br/>
-</div>

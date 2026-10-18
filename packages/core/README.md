@@ -2,7 +2,7 @@
   <br/>
   <img src="../../logo.svg" alt="Traceora" width="64" height="64" />
   <h1>@traceora/core</h1>
-  <p><strong>The framework-agnostic runtime intelligence engine.</strong></p>
+  <p><strong>The framework-agnostic runtime diagnostics engine.</strong></p>
 
 <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
 <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/dm/@traceora/core?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
@@ -28,7 +28,7 @@ npm install @traceora/core
 | ----------------------------------- | ------------------------------------------------------------------------------------------------- |
 | **`EventStore`**                    | In-memory ring buffer that efficiently stores the last _N_ events.                                |
 | **`EventEmitter`**                  | Pub/sub system — every event gets a UUID and a high-resolution timestamp.                         |
-| **`TraceID`**                       | Correlation engine — links related events (click → network request → response) under one trace.   |
+| **Trace handles**                   | Explicitly propagate a trace ID through `trace.fetch()` for correlated requests.                  |
 | **`setupNetworkInstrumentation()`** | Wraps `window.fetch` and `XMLHttpRequest` to capture request/response data and detect duplicates. |
 | **`setupErrorInstrumentation()`**   | Hooks `window.onerror` and `unhandledrejection` for automatic error capture.                      |
 | **`PerformanceMonitor`**            | Detects spam renders and rapidly repeating network requests.                                      |

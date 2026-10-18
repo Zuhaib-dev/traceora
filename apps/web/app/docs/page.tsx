@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,15 +15,41 @@ import {
   Search,
   Terminal,
   X,
-} from 'lucide-react'
+} from "lucide-react";
 
-const install = 'npm install @traceora/core @traceora/react @traceora/vite-plugin'
+const install =
+  "npm install @traceora/core @traceora/react @traceora/vite-plugin";
 const sections = [
-  { title: 'Getting started', items: ['Introduction', 'Installation', 'Quick start'] },
-  { title: 'Core concepts', items: ['How Traceora works', 'Trace context', 'Event model'] },
-  { title: 'Packages', items: ['@traceora/react', '@traceora/express', '@traceora/next', '@traceora/vite-plugin', '@traceora/node'] },
-  { title: 'Guides', items: ['Debug a user flow', 'Production setup', 'Troubleshooting'] },
-]
+  {
+    title: "Getting started",
+    items: ["Introduction", "Installation", "Quick start"],
+  },
+  {
+    title: "Core concepts",
+    items: [
+      "How Traceora works",
+      "Trace context",
+      "Event model",
+      "Diagnostic reports and state",
+      "Performance and OpenTelemetry",
+    ],
+  },
+  {
+    title: "Packages",
+    items: [
+      "@traceora/react",
+      "@traceora/express",
+      "@traceora/next",
+      "@traceora/vite-plugin",
+      "@traceora/node",
+      "@traceora/playwright",
+    ],
+  },
+  {
+    title: "Guides",
+    items: ["Debug a user flow", "Production setup", "Troubleshooting"],
+  },
+];
 
 const sectionLinks: Record<string, string> = {
   Introduction: "README.md",
@@ -32,6 +58,10 @@ const sectionLinks: Record<string, string> = {
   "How Traceora works": "docs/README.md",
   "Trace context": "packages/core/README.md#usage",
   "Event model": "packages/core/src/types.ts",
+  "Diagnostic reports and state":
+    "packages/core/README.md#diagnostic-reports-and-state-capture",
+  "Performance and OpenTelemetry":
+    "packages/core/README.md#performance-analysis-and-opentelemetry",
   "@traceora/react": "packages/react/README.md",
   "@traceora/express": "packages/express/README.md",
   "@traceora/next": "packages/next/README.md",
@@ -40,50 +70,508 @@ const sectionLinks: Record<string, string> = {
   "Debug a user flow": "packages/react/README.md#usage",
   "Production setup": "packages/react/README.md#usage",
   Troubleshooting: "CONTRIBUTING.md",
-}
-const repository = "https://github.com/zuhaib-dev/traceora/blob/main/"
+};
+const repository = "https://github.com/zuhaib-dev/traceora/blob/main/";
 
 function Logo() {
-  return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link>
+  return (
+    <Link
+      href="/"
+      className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"
+    >
+      <span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground">
+        <Hexagon className="size-4 fill-current" />
+      </span>
+      <span>
+        traceora<span className="text-primary">.</span>
+      </span>
+    </Link>
+  );
 }
 
-function CodeBlock({ code, label = 'terminal' }: { code: string; label?: string }) {
-  const [copied, setCopied] = useState(false)
-  const copyCode = async () => { await navigator.clipboard?.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 1400) }
-  return <div className="overflow-hidden rounded-xl border border-border bg-[#0a100f] shadow-xl shadow-black/10"><div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-[11px] text-muted-foreground"><span className="flex items-center gap-2 font-mono"><span className="flex gap-1.5"><i className="size-2 rounded-full bg-[#ff5f57]" /><i className="size-2 rounded-full bg-[#febc2e]" /><i className="size-2 rounded-full bg-[#28c840]" /></span>{label}</span><button onClick={copyCode} className="flex items-center gap-1.5 transition-colors hover:text-foreground" aria-label="Copy code">{copied ? <Check className="size-3.5 text-primary" /> : <Copy className="size-3.5" />}{copied ? 'copied' : 'copy'}</button></div><pre className="overflow-x-auto p-5 font-mono text-[12px] leading-6 text-[#b6c8c2]"><code>{code}</code></pre></div>
+function CodeBlock({
+  code,
+  label = "terminal",
+}: {
+  code: string;
+  label?: string;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copyCode = async () => {
+    await navigator.clipboard?.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1400);
+  };
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-[#0a100f] shadow-xl shadow-black/10">
+      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-[11px] text-muted-foreground">
+        <span className="flex items-center gap-2 font-mono">
+          <span className="flex gap-1.5">
+            <i className="size-2 rounded-full bg-[#ff5f57]" />
+            <i className="size-2 rounded-full bg-[#febc2e]" />
+            <i className="size-2 rounded-full bg-[#28c840]" />
+          </span>
+          {label}
+        </span>
+        <button
+          onClick={copyCode}
+          className="flex items-center gap-1.5 transition-colors hover:text-foreground"
+          aria-label="Copy code"
+        >
+          {copied ? (
+            <Check className="size-3.5 text-primary" />
+          ) : (
+            <Copy className="size-3.5" />
+          )}
+          {copied ? "copied" : "copy"}
+        </button>
+      </div>
+      <pre className="overflow-x-auto p-5 font-mono text-[12px] leading-6 text-[#b6c8c2]">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
 }
 
 export default function DocsPage() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const [active, setActiveState] = useState('Introduction')
-  const version = 'v0.4.8'
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [active, setActiveState] = useState("Introduction");
+  const version = "v0.5.0";
   const openSection = (item: string) => {
-    setActiveState(item)
-    const path = sectionLinks[item]
-    if (path) window.open(repository + path, '_blank', 'noopener,noreferrer')
-  }
-  const setActive = openSection
-  const visibleSections = useMemo(() => sections.map((section) => ({ ...section, items: section.items.filter((item) => item.toLowerCase().includes(query.toLowerCase())) })).filter((section) => section.items.length), [query])
+    setActiveState(item);
+    const path = sectionLinks[item];
+    if (path) window.open(repository + path, "_blank", "noopener,noreferrer");
+  };
+  const setActive = openSection;
+  const visibleSections = useMemo(
+    () =>
+      sections
+        .map((section) => ({
+          ...section,
+          items: section.items.filter((item) =>
+            item.toLowerCase().includes(query.toLowerCase()),
+          ),
+        }))
+        .filter((section) => section.items.length),
+    [query],
+  );
 
-  return <main className="min-h-screen bg-background text-foreground"><div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />
-    <header className="relative z-30 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex max-w-360 items-center justify-between px-5 py-4 lg:px-8"><Logo /><nav className="hidden items-center gap-7 text-sm md:flex"><Link href="/" className="text-muted-foreground hover:text-foreground">Product</Link><Link href="/blogs" className="text-muted-foreground hover:text-foreground">Journal</Link><Link href="/docs" className="text-foreground">Docs</Link></nav><div className="flex items-center gap-3"><div className="hidden items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground sm:flex"><span className="size-1.5 rounded-full bg-primary" /> v1.4 stable <ChevronDown className="size-3" /></div><Link href="/#docs" className="hidden rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground sm:block">Start tracing <ArrowRight className="ml-1 inline size-3" /></Link><button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}</button></div></div>{menuOpen && <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm md:hidden"><Link href="/">Product</Link><Link href="/blogs">Journal</Link><Link href="/docs">Docs</Link></nav>}</header>
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />
+      <header className="relative z-30 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-360 items-center justify-between px-5 py-4 lg:px-8">
+          <Logo />
+          <nav className="hidden items-center gap-7 text-sm md:flex">
+            <Link
+              href="/"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Product
+            </Link>
+            <Link
+              href="/blogs"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Journal
+            </Link>
+            <Link href="/docs" className="text-foreground">
+              Docs
+            </Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            <div className="hidden items-center gap-2 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground sm:flex">
+              <span className="size-1.5 rounded-full bg-primary" /> v0.5.0{" "}
+              <ChevronDown className="size-3" />
+            </div>
+            <Link
+              href="/#docs"
+              className="hidden rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground sm:block"
+            >
+              Start tracing <ArrowRight className="ml-1 inline size-3" />
+            </Link>
+            <button
+              className="md:hidden"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? (
+                <X className="size-5" />
+              ) : (
+                <Menu className="size-5" />
+              )}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm md:hidden">
+            <Link href="/">Product</Link>
+            <Link href="/blogs">Journal</Link>
+            <Link href="/docs">Docs</Link>
+          </nav>
+        )}
+      </header>
 
-        <div className="relative mx-auto flex max-w-360 px-5 lg:px-8"><aside className="hidden w-64 shrink-0 border-r border-border py-10 pr-8 lg:block"><div className="sticky top-8"><p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Documentation</p><label className="mb-8 flex items-center gap-2 border-b border-border py-2 text-sm text-muted-foreground focus-within:border-primary"><Search className="size-3.5" /><span className="sr-only">Search documentation</span><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs" className="w-full bg-transparent outline-none placeholder:text-muted-foreground/60" /></label><div className="flex flex-col gap-7">{visibleSections.map((section) => <div key={section.title}><p className="mb-3 text-xs font-medium text-foreground">{section.title}</p><div className="flex flex-col gap-1">{section.items.map((item) => <button key={item} onClick={() => setActive(item)} className={`flex items-center justify-between rounded-md px-2.5 py-2 text-left text-xs transition-colors ${active === item ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-card hover:text-foreground'}`}>{item}{active === item && <ChevronRight className="size-3" />}</button>)}</div></div>)}</div></div></aside>
+      <div className="relative mx-auto flex max-w-360 px-5 lg:px-8">
+        <aside className="hidden w-64 shrink-0 border-r border-border py-10 pr-8 lg:block">
+          <div className="sticky top-8">
+            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+              Documentation
+            </p>
+            <label className="mb-8 flex items-center gap-2 border-b border-border py-2 text-sm text-muted-foreground focus-within:border-primary">
+              <Search className="size-3.5" />
+              <span className="sr-only">Search documentation</span>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search docs"
+                className="w-full bg-transparent outline-none placeholder:text-muted-foreground/60"
+              />
+            </label>
+            <div className="flex flex-col gap-7">
+              {visibleSections.map((section) => (
+                <div key={section.title}>
+                  <p className="mb-3 text-xs font-medium text-foreground">
+                    {section.title}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    {section.items.map((item) => (
+                      <button
+                        key={item}
+                        onClick={() => setActive(item)}
+                        className={`flex items-center justify-between rounded-md px-2.5 py-2 text-left text-xs transition-colors ${active === item ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card hover:text-foreground"}`}
+                      >
+                        {item}
+                        {active === item && <ChevronRight className="size-3" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
 
-      <section className="min-w-0 flex-1 lg:pl-14"><div className="flex items-center gap-2 py-5 text-xs text-muted-foreground"><Link href="/" className="hover:text-foreground">Docs</Link><ChevronRight className="size-3" /><span className="text-foreground">{active}</span></div><div className="grid gap-16 pb-24 pt-12 xl:grid-cols-[minmax(0,720px)_180px] xl:gap-20"><article className="min-w-0"><div className="mb-8 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary"><span className="size-1.5 rounded-full bg-primary" /> Traceora docs <span className="text-muted-foreground">/ {version}</span></div><h1 className="text-balance text-5xl font-medium leading-[0.95] tracking-[-0.065em] sm:text-7xl">Build software that<br /><span className="text-primary">explains itself.</span></h1><p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground">Traceora connects the dots between a user interaction and everything it sets in motion. This guide gets you from install to your first full-stack trace.</p><div className="mt-10 flex flex-wrap gap-3"><a href="#install" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Quick start <ArrowRight className="size-4" /></a><a href="https://github.com/zuhaib-dev/traceora" target="_blank" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium hover:border-primary/40">View examples <ExternalLink className="size-3.5" /></a></div>
+        <section className="min-w-0 flex-1 lg:pl-14">
+          <div className="flex items-center gap-2 py-5 text-xs text-muted-foreground">
+            <Link href="/" className="hover:text-foreground">
+              Docs
+            </Link>
+            <ChevronRight className="size-3" />
+            <span className="text-foreground">{active}</span>
+          </div>
+          <div className="grid gap-16 pb-24 pt-12 xl:grid-cols-[minmax(0,720px)_180px] xl:gap-20">
+            <article className="min-w-0">
+              <div className="mb-8 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+                <span className="size-1.5 rounded-full bg-primary" /> Traceora
+                docs <span className="text-muted-foreground">/ {version}</span>
+              </div>
+              <h1 className="text-balance text-5xl font-medium leading-[0.95] tracking-[-0.065em] sm:text-7xl">
+                Build software that
+                <br />
+                <span className="text-primary">explains itself.</span>
+              </h1>
+              <p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground">
+                Traceora records browser and backend events locally. Use a trace
+                handle to correlate a browser request with events from an
+                instrumented server. This guide gets you from install to your
+                first trace.
+              </p>
+              <div className="mt-10 flex flex-wrap gap-3">
+                <a
+                  href="#install"
+                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+                >
+                  Quick start <ArrowRight className="size-4" />
+                </a>
+                <a
+                  href="https://github.com/zuhaib-dev/traceora"
+                  target="_blank"
+                  className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium hover:border-primary/40"
+                >
+                  View examples <ExternalLink className="size-3.5" />
+                </a>
+              </div>
 
-        <div className="relative mt-16 overflow-hidden rounded-2xl border border-primary/20 bg-[#0a1110] p-5 shadow-2xl shadow-primary/10 sm:p-8" aria-label="Live trace visualization"><div className="absolute inset-0 grid-bg opacity-40" /><div className="relative flex items-center justify-between border-b border-white/10 pb-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground"><span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-primary motion-safe:animate-pulse" /> live trace / checkout-flow</span><span className="text-primary">streaming</span></div><div className="relative grid min-h-62.5 grid-cols-[1fr_auto_1fr] items-center gap-3 py-8 sm:gap-8"><div className="flex flex-col gap-3"><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> button.click</div><div className="trace-node"><span className="size-2 rounded-full bg-cyan-300" /> cart.addItem</div><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> checkout.open</div></div><div className="relative flex h-full w-10 items-center justify-center"><div className="h-full w-px bg-linear-to-b from-transparent via-primary to-transparent" /><i className="trace-packet absolute left-1/2 top-1/4 size-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_16px_4px] shadow-primary" /></div><div className="flex flex-col gap-3"><div className="trace-node"><span className="size-2 rounded-full bg-amber-300" /> POST /api/cart</div><div className="trace-node"><span className="size-2 rounded-full bg-cyan-300" /> db.query</div><div className="trace-node"><span className="size-2 rounded-full bg-primary" /> 200 OK · 184ms</div></div></div><div className="relative flex items-center justify-between border-t border-white/10 pt-4 text-[10px] font-mono text-muted-foreground"><span>6 events linked</span><span className="text-primary">→ zero context switching</span></div></div>
+              <div
+                className="relative mt-16 overflow-hidden rounded-2xl border border-primary/20 bg-[#0a1110] p-5 shadow-2xl shadow-primary/10 sm:p-8"
+                aria-label="Illustration of related trace events"
+              >
+                <div className="absolute inset-0 grid-bg opacity-40" />
+                <div className="relative flex items-center justify-between border-b border-white/10 pb-4 text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                  <span className="flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-primary motion-safe:animate-pulse" />{" "}
+                    example trace / checkout-flow
+                  </span>
+                  <span className="text-primary">illustration</span>
+                </div>
+                <div className="relative grid min-h-62.5 grid-cols-[1fr_auto_1fr] items-center gap-3 py-8 sm:gap-8">
+                  <div className="flex flex-col gap-3">
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-primary" />{" "}
+                      button.click
+                    </div>
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-cyan-300" />{" "}
+                      cart.addItem
+                    </div>
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-primary" />{" "}
+                      checkout.open
+                    </div>
+                  </div>
+                  <div className="relative flex h-full w-10 items-center justify-center">
+                    <div className="h-full w-px bg-linear-to-b from-transparent via-primary to-transparent" />
+                    <i className="trace-packet absolute left-1/2 top-1/4 size-2 -translate-x-1/2 rounded-full bg-primary shadow-[0_0_16px_4px] shadow-primary" />
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-amber-300" /> POST
+                      /api/cart
+                    </div>
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-cyan-300" />{" "}
+                      db.query
+                    </div>
+                    <div className="trace-node">
+                      <span className="size-2 rounded-full bg-primary" /> 200 OK
+                      · 184ms
+                    </div>
+                  </div>
+                </div>
+                <div className="relative flex items-center justify-between border-t border-white/10 pt-4 text-[10px] font-mono text-muted-foreground">
+                  <span>6 events linked</span>
+                  <span className="text-primary">→ zero context switching</span>
+                </div>
+              </div>
 
-        <div id="install" className="mt-20 border-t border-border pt-10"><p className="font-mono text-xs text-primary">01 / Installation</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Add Traceora to your app</h2><p className="mt-4 leading-7 text-muted-foreground">Install the core packages with your preferred package manager. The Vite plugin handles instrumentation at build time, so your components stay clean.</p><div className="mt-7"><CodeBlock code={install} /></div></div>
-        <div className="mt-16 border-t border-border pt-10"><p className="font-mono text-xs text-primary">02 / Configure Vite</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Babel AST Instrumentation</h2><p className="mt-4 leading-7 text-muted-foreground">Add the plugin before React in your Vite config. This will automatically inject performance and click tracking into all of your JSX elements.</p><div className="mt-7"><CodeBlock label="vite.config.ts" code={`import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\nimport { traceoraPlugin } from '@traceora/vite-plugin'\n\nexport default defineConfig({\n  plugins: [traceoraPlugin(), react()],\n})`} /></div></div>
-        <div className="mt-16 border-t border-border pt-10"><p className="font-mono text-xs text-primary">03 / React Providers</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Add the DevTools UI</h2><p className="mt-4 leading-7 text-muted-foreground">Wrap your application in <code>TraceoraProvider</code> and mount the floating <code>TraceoraDevtools</code> inside your entry point.</p><div className="mt-7"><CodeBlock label="main.tsx" code={`import { TraceoraProvider, TraceoraDevtools } from '@traceora/react';\n\ncreateRoot(document.getElementById('root')!).render(\n  <TraceoraProvider>\n    <App />\n    <TraceoraDevtools />\n  </TraceoraProvider>\n);`} /></div></div>
-        <div className="mt-16 border-t border-border pt-10"><p className="font-mono text-xs text-cyan-400">04 / Backend (Optional)</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Connect your Express API</h2><p className="mt-4 leading-7 text-muted-foreground">Install <code>@traceora/express</code> and add the middleware to seamlessly inject database logs and backend errors directly into your frontend timeline via HTTP headers. <strong className="text-primary">Note:</strong> If your frontend and backend run on different ports, you MUST allow the <code>X-Traceora-TraceId</code> header in your CORS config to prevent browser preflight blocks.</p><div className="mt-7"><CodeBlock label="server.ts" code={`import { traceora } from '@traceora/express';\nimport { emitTraceEvent } from '@traceora/node';\nimport cors from 'cors';\n\n// MUST expose and allow custom headers for Traceora to work across CORS!\napp.use(cors({ \n  allowedHeaders: ["Content-Type", "Authorization", "X-Traceora-TraceId"],\n  exposedHeaders: ["X-Traceora-Events"] \n}));\n\napp.use(traceora());\n\napp.get('/api', (req, res) => {\n  emitTraceEvent({\n    type: "STATE_CHANGE",\n    source: "MySQL",\n    metadata: { query: "SELECT * FROM users" }\n  });\n  res.json({ ok: true });\n});`} /></div></div>
-        <div className="mt-16 border-t border-border pt-10"><p className="font-mono text-xs text-cyan-400">05 / Next.js (Optional)</p><h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">Full-Stack Next.js App Router</h2><p className="mt-4 leading-7 text-muted-foreground">Using Next.js instead? Just install <code>@traceora/next</code>. Wrap your layout in <code>TraceoraNextProvider</code>, wrap your Server Actions in <code>traceAction</code>, and let Traceora do the rest.</p><div className="mt-7"><CodeBlock label="app/api/users/route.ts" code={`import { NextResponse } from "next/server";\nimport { withTraceora } from "@traceora/next";\nimport { traceoraPrismaExtension } from "@traceora/node";\nimport { PrismaClient } from "@prisma/client";\n\n// Auto-tracks all database queries!\nconst prisma = new PrismaClient().$extends(traceoraPrismaExtension());\n\nexport const GET = withTraceora(async (req: Request) => {\n  const users = await prisma.user.findMany();\n  return NextResponse.json({ users });\n});`} /></div></div>
-        <div className="mt-16 rounded-xl border border-primary/20 bg-primary/8 p-6"><div className="flex items-center gap-3"><Terminal className="size-4 text-primary" /><p className="text-sm font-medium">Ready to see your first trace?</p></div><p className="mt-3 text-sm leading-6 text-muted-foreground">Run your app, open the Traceora panel in the bottom right, and click any button. Watch the timeline magically populate across your stack.</p><Link href="https://github.com/zuhaib-dev/traceora" target="_blank" className="mt-5 inline-flex items-center gap-2 text-sm text-primary">View GitHub Repository <ArrowRight className="size-4" /></Link></div>
-        <div className="mt-16 flex items-center justify-between border-t border-border pt-6 text-sm"><button className="flex items-center gap-2 text-muted-foreground hover:text-foreground"><ArrowLeft className="size-4" /> Previous</button><button className="flex items-center gap-2 text-primary">Installation <ArrowRight className="size-4" /></button></div></article>
-        <aside className="hidden xl:block"><div className="sticky top-8 border-l border-border pl-5"><p className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">On this page</p><div className="flex flex-col gap-3 text-xs text-muted-foreground"><a href="#install" className="text-primary">Installation</a><a href="#install" className="hover:text-foreground">Configure</a><a href="#install" className="hover:text-foreground">Next steps</a></div><div className="mt-10 border-t border-border pt-5"><p className="text-xs text-muted-foreground">Need help?</p><a href="https://github.com/zuhaib-dev/traceora" target="_blank" className="mt-2 inline-flex items-center gap-1 text-xs text-primary">Ask on GitHub <ExternalLink className="size-3" /></a></div></div></aside>
-      </div></section>
-    </div>
-  </main>
+              <div id="install" className="mt-20 border-t border-border pt-10">
+                <p className="font-mono text-xs text-primary">
+                  01 / Installation
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Add Traceora to your app
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Install the core packages with your preferred package manager.
+                  The optional Vite plugin instruments supported named function
+                  components at build time; it does not cover every JSX element
+                  or component form.
+                </p>
+                <div className="mt-7">
+                  <CodeBlock code={install} />
+                </div>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-primary">
+                  02 / Configure Vite
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Babel AST Instrumentation
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Add the plugin before React in your Vite config. It
+                  instruments supported named function components; React
+                  Profiler timings are recorded by the provider.
+                </p>
+                <div className="mt-7">
+                  <CodeBlock
+                    label="vite.config.ts"
+                    code={`import { defineConfig } from 'vite'\nimport react from '@vitejs/plugin-react'\nimport { traceoraPlugin } from '@traceora/vite-plugin'\n\nexport default defineConfig({\n  plugins: [traceoraPlugin(), react()],\n})`}
+                  />
+                </div>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-primary">
+                  03 / React Providers
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Add the DevTools UI
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Wrap your application in <code>TraceoraProvider</code> and
+                  mount the floating <code>TraceoraDevtools</code> inside your
+                  entry point.
+                </p>
+                <div className="mt-7">
+                  <CodeBlock
+                    label="main.tsx"
+                    code={`import { TraceoraProvider, TraceoraDevtools } from '@traceora/react';\n\ncreateRoot(document.getElementById('root')!).render(\n  <TraceoraProvider>\n    <App />\n    <TraceoraDevtools />\n  </TraceoraProvider>\n);`}
+                  />
+                </div>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-cyan-400">
+                  04 / Backend (Optional)
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Connect your Express API
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Install <code>@traceora/express</code> and add the middleware
+                  to propagate an incoming trace ID and return events emitted
+                  during that request in response headers. Add database
+                  instrumentation with the optional Prisma or Mongoose plugins.{" "}
+                  <strong className="text-primary">Note:</strong> If your
+                  frontend and backend run on different ports, you MUST allow
+                  the <code>X-Traceora-TraceId</code> header in your CORS config
+                  to prevent browser preflight blocks.
+                </p>
+                <div className="mt-7">
+                  <CodeBlock
+                    label="server.ts"
+                    code={`import { traceora } from '@traceora/express';\nimport { emitTraceEvent } from '@traceora/node';\nimport cors from 'cors';\n\n// MUST expose and allow custom headers for Traceora to work across CORS!\napp.use(cors({ \n  allowedHeaders: ["Content-Type", "Authorization", "X-Traceora-TraceId"],\n  exposedHeaders: ["X-Traceora-Events"] \n}));\n\napp.use(traceora());\n\napp.get('/api', (req, res) => {\n  emitTraceEvent({\n    type: "DATABASE_QUERY",\n    source: "MySQL",\n    metadata: { query: "SELECT * FROM users" }\n  });\n  res.json({ ok: true });\n});`}
+                  />
+                </div>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-cyan-400">
+                  05 / Next.js (Optional)
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Full-Stack Next.js App Router
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Using Next.js? Install <code>@traceora/next</code> and wrap
+                  your layout in <code>TraceoraNextProvider</code>. Route
+                  Handler correlation is explicit; <code>traceAction</code>{" "}
+                  captures server-local events that you can receive through its
+                  callback.
+                </p>
+                <div className="mt-7">
+                  <CodeBlock
+                    label="app/api/users/route.ts"
+                    code={`import { NextResponse } from "next/server";\nimport { withTraceora } from "@traceora/next";\nimport { traceoraPrismaExtension } from "@traceora/node";\nimport { PrismaClient } from "@prisma/client";\n\n// Auto-tracks all database queries!\nconst prisma = new PrismaClient().$extends(traceoraPrismaExtension());\n\nexport const GET = withTraceora(async (req: Request) => {\n  const users = await prisma.user.findMany();\n  return NextResponse.json({ users });\n});`}
+                  />
+                </div>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-primary">
+                  06 / Reports and state
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Carry useful context into review
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  Export a versioned sanitized report from DevTools, reopen it
+                  offline, or attach it to CI. Core also provides{" "}
+                  <code>instrumentStore</code> for opt-in Redux-like and
+                  Zustand-like state diffs. Configure redaction for
+                  application-specific fields and review reports before sharing.
+                </p>
+                <p className="mt-3 leading-7 text-muted-foreground">
+                  React Profiler timings and network/database durations can
+                  surface evidence-linked performance suggestions. These
+                  heuristics help prioritize investigation; they do not diagnose
+                  or fix issues automatically.
+                </p>
+                <a
+                  className="mt-4 inline-flex text-sm text-primary"
+                  href={repository + "packages/core/README.md"}
+                  target="_blank"
+                >
+                  Core report and state guide{" "}
+                  <ExternalLink className="ml-2 size-3.5" />
+                </a>
+              </div>
+              <div className="mt-16 border-t border-border pt-10">
+                <p className="font-mono text-xs text-primary">
+                  07 / Playwright and OpenTelemetry
+                </p>
+                <h2 className="mt-4 text-3xl tracking-[-0.04em] sm:text-4xl">
+                  Bring diagnostics into your tools
+                </h2>
+                <p className="mt-4 leading-7 text-muted-foreground">
+                  <code>@traceora/playwright</code> attaches a sanitized browser
+                  report to failed tests by default. Core can convert Traceora
+                  events to OpenTelemetry-compatible spans or import span-shaped
+                  data into the local timeline; configure your own SDK/exporter
+                  to send data to a collector.
+                </p>
+                <div className="mt-4 flex gap-5 text-sm">
+                  <a
+                    className="text-primary"
+                    href={repository + "packages/playwright/README.md"}
+                    target="_blank"
+                  >
+                    Playwright guide{" "}
+                    <ExternalLink className="ml-2 inline size-3.5" />
+                  </a>
+                  <a
+                    className="text-primary"
+                    href={
+                      repository +
+                      "packages/core/README.md#performance-analysis-and-opentelemetry"
+                    }
+                    target="_blank"
+                  >
+                    OpenTelemetry guide{" "}
+                    <ExternalLink className="ml-2 inline size-3.5" />
+                  </a>
+                </div>
+              </div>
+              <div className="mt-16 rounded-xl border border-primary/20 bg-primary/8 p-6">
+                <div className="flex items-center gap-3">
+                  <Terminal className="size-4 text-primary" />
+                  <p className="text-sm font-medium">
+                    Ready to see your first trace?
+                  </p>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                  Run your app, open the Traceora panel in the bottom right, and
+                  click any button. Use <code>trace.fetch()</code> for an
+                  explicitly correlated request, then inspect its browser and
+                  server events in the timeline.
+                </p>
+                <Link
+                  href="https://github.com/zuhaib-dev/traceora"
+                  target="_blank"
+                  className="mt-5 inline-flex items-center gap-2 text-sm text-primary"
+                >
+                  View GitHub Repository <ArrowRight className="size-4" />
+                </Link>
+              </div>
+              <div className="mt-16 flex items-center justify-between border-t border-border pt-6 text-sm">
+                <button className="flex items-center gap-2 text-muted-foreground hover:text-foreground">
+                  <ArrowLeft className="size-4" /> Previous
+                </button>
+                <button className="flex items-center gap-2 text-primary">
+                  Installation <ArrowRight className="size-4" />
+                </button>
+              </div>
+            </article>
+            <aside className="hidden xl:block">
+              <div className="sticky top-8 border-l border-border pl-5">
+                <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  On this page
+                </p>
+                <div className="flex flex-col gap-3 text-xs text-muted-foreground">
+                  <a href="#install" className="text-primary">
+                    Installation
+                  </a>
+                  <a href="#install" className="hover:text-foreground">
+                    Configure
+                  </a>
+                  <a href="#install" className="hover:text-foreground">
+                    Next steps
+                  </a>
+                </div>
+                <div className="mt-10 border-t border-border pt-5">
+                  <p className="text-xs text-muted-foreground">Need help?</p>
+                  <a
+                    href="https://github.com/zuhaib-dev/traceora"
+                    target="_blank"
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
+                  >
+                    Ask on GitHub <ExternalLink className="size-3" />
+                  </a>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+      </div>
+    </main>
+  );
 }

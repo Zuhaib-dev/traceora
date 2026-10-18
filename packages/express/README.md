@@ -4,13 +4,13 @@
   <h1>@traceora/express</h1>
   <p><strong>Trace correlation and backend event capture for Express.js.</strong></p>
 
-  <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/v/@traceora/express.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
-  <a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/dm/@traceora/express?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
-  <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
-  <br/><br/>
+<a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/v/@traceora/express.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
+<a href="https://www.npmjs.com/package/@traceora/express"><img src="https://img.shields.io/npm/dm/@traceora/express?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
+<a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
+<br/><br/>
 </div>
 
-> Correlates matching frontend requests with Express-side events through response headers. No WebSocket or Redis service is required; configure CORS and tracing explicitly for your deployment.
+> Correlates explicitly traced frontend requests with Express-side events through response headers. No WebSocket or Redis service is required; configure CORS and tracing explicitly for your deployment.
 
 ---
 
@@ -27,26 +27,26 @@ npm install @traceora/express
 Two steps: add CORS headers, add the middleware.
 
 ```ts
-import express from 'express';
-import cors from 'cors';
-import { traceora } from '@traceora/express';
-import { emitTraceEvent } from '@traceora/node';
+import express from "express";
+import cors from "cors";
+import { traceora } from "@traceora/express";
+import { emitTraceEvent } from "@traceora/node";
 
 const app = express();
 
 // 1. MUST expose the custom header so the browser can read it
-app.use(cors({ exposedHeaders: ['X-Traceora-Events'] }));
+app.use(cors({ exposedHeaders: ["X-Traceora-Events"] }));
 
 // 2. Add Traceora middleware BEFORE your routes
 app.use(traceora());
 
 // 3. Emit backend events anywhere — no need to pass `req` around
-app.get('/api/users', async (req, res) => {
+app.get("/api/users", async (req, res) => {
   emitTraceEvent({
-    type: 'STATE_CHANGE',
-    source: 'MySQL',
+    type: "DATABASE_QUERY",
+    source: "MySQL",
     metadata: {
-      query: 'SELECT * FROM users WHERE active = 1',
+      query: "SELECT * FROM users WHERE active = 1",
       durationMs: 145,
     },
   });
@@ -77,7 +77,7 @@ React Frontend                       Express Backend
                                        serializes events into:
                                        X-Traceora-Events header
 
-5. Frontend reads header       ←  
+5. Frontend reads header       ←
    Merges backend events into
    the same timeline under the
    same Trace ID
@@ -96,22 +96,24 @@ No manual `emitTraceEvent()` needed for database operations:
 <summary><strong>Prisma</strong></summary>
 
 ```ts
-import { PrismaClient } from '@prisma/client';
-import { traceoraPrismaExtension } from '@traceora/node';
+import { PrismaClient } from "@prisma/client";
+import { traceoraPrismaExtension } from "@traceora/node";
 
 const prisma = new PrismaClient().$extends(traceoraPrismaExtension());
 ```
+
 </details>
 
 <details>
 <summary><strong>Mongoose</strong></summary>
 
 ```ts
-import mongoose from 'mongoose';
-import { traceoraMongoosePlugin } from '@traceora/node';
+import mongoose from "mongoose";
+import { traceoraMongoosePlugin } from "@traceora/node";
 
 mongoose.plugin(traceoraMongoosePlugin);
 ```
+
 </details>
 
 ---
@@ -134,11 +136,11 @@ Pushes an event into the current request's trace context. If called outside an a
 
 ## 🔗 Related Packages
 
-| Package | Role |
-|---|---|
-| [`@traceora/node`](../node) | Shared backend primitives (used by this package) |
-| [`@traceora/react`](../react) | Frontend counterpart that sends the Trace ID |
-| [`@traceora/core`](../core) | The underlying event engine |
+| Package                       | Role                                             |
+| ----------------------------- | ------------------------------------------------ |
+| [`@traceora/node`](../node)   | Shared backend primitives (used by this package) |
+| [`@traceora/react`](../react) | Frontend counterpart that sends the Trace ID     |
+| [`@traceora/core`](../core)   | The underlying event engine                      |
 
 ---
 

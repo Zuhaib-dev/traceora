@@ -1,17 +1,361 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { useState } from 'react'
-import { ArrowRight, Check, ChevronRight, Code2, Eye, GitBranch, Hexagon, Menu, Radio, ShieldCheck, Sparkles, X, Zap } from 'lucide-react'
+import Link from "next/link";
+import { useState } from "react";
+import {
+  ArrowRight,
+  Check,
+  ChevronRight,
+  Code2,
+  GitBranch,
+  Hexagon,
+  Menu,
+  Radio,
+  ShieldCheck,
+  Sparkles,
+  X,
+  Zap,
+  FileText,
+  Activity,
+  FlaskConical,
+} from "lucide-react";
 
 const featureSets = [
-  { id: 'timeline', label: 'Event timeline', eyebrow: '01 / Inspect runtime events', title: 'See the activity your app records.', body: 'Traceora puts browser and backend events in one local timeline. Use trace.fetch() when you want an interaction and its request to share a trace ID.', icon: GitBranch },
-  { id: 'signals', label: 'Signals', eyebrow: '02 / Narrow the timeline', title: 'Move from noise to event detail.', body: 'Filter by event category and inspect network timings, errors, component lifecycle events, and backend database operations.', icon: Radio },
-]
+  {
+    id: "timeline",
+    label: "Event timeline",
+    eyebrow: "01 / Inspect runtime events",
+    title: "See the activity your app records.",
+    body: "Inspect browser and backend events in a bounded local timeline. Use a trace handle with trace.fetch() when you want to correlate a request across the browser and an instrumented server.",
+    icon: GitBranch,
+  },
+  {
+    id: "reports",
+    label: "Portable reports",
+    eyebrow: "02 / Share a reviewable snapshot",
+    title: "Take a bug report out of the browser.",
+    body: "Export a versioned, sanitized JSON report, reopen it in DevTools for offline review, or attach it to CI output. Review application metadata before sharing.",
+    icon: FileText,
+  },
+  {
+    id: "state",
+    label: "State changes",
+    eyebrow: "03 / Follow store transitions",
+    title: "See what changed in your store.",
+    body: "Wrap a Redux-like, Zustand-like, or custom store with instrumentStore and provide a snapshot function. Traceora emits bounded state-diff events without taking a dependency on your state library.",
+    icon: Radio,
+  },
+  {
+    id: "performance",
+    label: "Performance clues",
+    eyebrow: "04 / Investigate measured timings",
+    title: "Find the slow events worth inspecting.",
+    body: "React commit timings and network or database durations feed heuristic suggestions linked to their source events. Use them as leads for investigation, not automatic diagnoses.",
+    icon: Activity,
+  },
+  {
+    id: "testing",
+    label: "Testing and OTel",
+    eyebrow: "05 / Fit into your toolchain",
+    title: "Bring diagnostics into tests and tracing tools.",
+    body: "Attach sanitized browser reports to failed Playwright tests, or convert Traceora events to OpenTelemetry spans and import span-shaped data into the local timeline.",
+    icon: FlaskConical,
+  },
+];
 
-function Logo() { return <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"><span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground"><Hexagon className="size-4 fill-current" /></span><span>traceora<span className="text-primary">.</span></span></Link> }
+function Logo() {
+  return (
+    <Link
+      href="/"
+      className="flex items-center gap-2.5 text-sm font-semibold tracking-[-0.03em]"
+    >
+      <span className="grid size-7 place-items-center rounded-[8px] bg-primary text-primary-foreground">
+        <Hexagon className="size-4 fill-current" />
+      </span>
+      <span>
+        traceora<span className="text-primary">.</span>
+      </span>
+    </Link>
+  );
+}
 
-function SignalMap() { return <div className="relative min-h-90 overflow-hidden rounded-2xl border border-primary/20 bg-[#09110f] p-5 shadow-2xl shadow-primary/10 sm:p-8"><div className="absolute inset-0 grid-bg opacity-45" /><div className="relative flex items-center justify-between border-b border-white/10 pb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground"><span className="flex items-center gap-2"><span className="size-1.5 animate-pulse rounded-full bg-primary" /> live session / 8f2c</span><span className="text-primary">capturing</span></div><div className="relative flex min-h-62.5 items-center justify-center py-8"><div className="absolute left-[12%] top-[25%] size-2 rounded-full bg-primary shadow-[0_0_18px_5px] shadow-primary" /><div className="absolute right-[16%] top-[31%] size-2 rounded-full bg-cyan-300 shadow-[0_0_18px_5px] shadow-cyan-300/60" /><div className="absolute bottom-[18%] left-[30%] size-2 rounded-full bg-amber-300 shadow-[0_0_18px_5px] shadow-amber-300/50" /><svg className="absolute inset-0 size-full" viewBox="0 0 600 240" fill="none" preserveAspectRatio="none" aria-hidden="true"><path d="M72 65 C180 30 210 190 300 120 S450 35 520 75" stroke="url(#line)" strokeWidth="1.5" strokeDasharray="5 7"/><path d="M300 120 C250 160 260 190 180 200" stroke="url(#line2)" strokeWidth="1.5" strokeDasharray="5 7"/><defs><linearGradient id="line" x1="72" y1="65" x2="520" y2="75"><stop stopColor="#9effc7" stopOpacity=".1"/><stop offset=".5" stopColor="#9effc7"/><stop offset="1" stopColor="#72e8ff" stopOpacity=".4"/></linearGradient><linearGradient id="line2" x1="300" y1="120" x2="180" y2="200"><stop stopColor="#9effc7"/><stop offset="1" stopColor="#ffc56b" stopOpacity=".2"/></linearGradient></defs></svg><div className="relative grid size-28 place-items-center rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_70px] shadow-primary/15"><div className="grid size-16 place-items-center rounded-full border border-primary/50 bg-[#10231c]"><Zap className="size-6 text-primary" /></div></div><div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-muted-foreground backdrop-blur"><span className="text-primary">checkout.open</span> → 184ms → 200 OK</div></div></div> }
+function SignalMap() {
+  return (
+    <div className="relative min-h-90 overflow-hidden rounded-2xl border border-primary/20 bg-[#09110f] p-5 shadow-2xl shadow-primary/10 sm:p-8">
+      <div className="absolute inset-0 grid-bg opacity-45" />
+      <div className="relative flex items-center justify-between border-b border-white/10 pb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+        <span className="flex items-center gap-2">
+          <span className="size-1.5 animate-pulse rounded-full bg-primary" />{" "}
+          live session / 8f2c
+        </span>
+        <span className="text-primary">capturing</span>
+      </div>
+      <div className="relative flex min-h-62.5 items-center justify-center py-8">
+        <div className="absolute left-[12%] top-[25%] size-2 rounded-full bg-primary shadow-[0_0_18px_5px] shadow-primary" />
+        <div className="absolute right-[16%] top-[31%] size-2 rounded-full bg-cyan-300 shadow-[0_0_18px_5px] shadow-cyan-300/60" />
+        <div className="absolute bottom-[18%] left-[30%] size-2 rounded-full bg-amber-300 shadow-[0_0_18px_5px] shadow-amber-300/50" />
+        <svg
+          className="absolute inset-0 size-full"
+          viewBox="0 0 600 240"
+          fill="none"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M72 65 C180 30 210 190 300 120 S450 35 520 75"
+            stroke="url(#line)"
+            strokeWidth="1.5"
+            strokeDasharray="5 7"
+          />
+          <path
+            d="M300 120 C250 160 260 190 180 200"
+            stroke="url(#line2)"
+            strokeWidth="1.5"
+            strokeDasharray="5 7"
+          />
+          <defs>
+            <linearGradient id="line" x1="72" y1="65" x2="520" y2="75">
+              <stop stopColor="#9effc7" stopOpacity=".1" />
+              <stop offset=".5" stopColor="#9effc7" />
+              <stop offset="1" stopColor="#72e8ff" stopOpacity=".4" />
+            </linearGradient>
+            <linearGradient id="line2" x1="300" y1="120" x2="180" y2="200">
+              <stop stopColor="#9effc7" />
+              <stop offset="1" stopColor="#ffc56b" stopOpacity=".2" />
+            </linearGradient>
+          </defs>
+        </svg>
+        <div className="relative grid size-28 place-items-center rounded-full border border-primary/40 bg-primary/10 shadow-[0_0_70px] shadow-primary/15">
+          <div className="grid size-16 place-items-center rounded-full border border-primary/50 bg-[#10231c]">
+            <Zap className="size-6 text-primary" />
+          </div>
+        </div>
+        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 font-mono text-[10px] text-muted-foreground backdrop-blur">
+          <span className="text-primary">checkout.open</span> → 184ms → 200 OK
+        </div>
+      </div>
+    </div>
+  );
+}
 
-export default function FeaturesPage() { const [menuOpen, setMenuOpen] = useState(false); const [active, setActive] = useState('timeline'); const selected = featureSets.find((item) => item.id === active) ?? featureSets[0]; const Icon = selected.icon
- return <main className="min-h-screen bg-background text-foreground"><div className="pointer-events-none fixed inset-0 grid-bg opacity-25" /><header className="relative z-30 border-b border-border bg-background/85 backdrop-blur-xl"><div className="mx-auto flex max-w-330 items-center justify-between px-5 py-4 lg:px-8"><Logo /><nav className="hidden items-center gap-7 text-sm md:flex"><Link href="/" className="text-foreground">Product</Link><Link href="/blogs" className="text-muted-foreground hover:text-foreground">Journal</Link><Link href="/docs" className="text-muted-foreground hover:text-foreground">Docs</Link></nav><div className="flex items-center gap-3"><Link href="/docs" className="hidden rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground sm:block">Read the docs <ArrowRight className="ml-1 inline size-3" /></Link><button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle menu">{menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}</button></div></div>{menuOpen && <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm md:hidden"><Link href="/">Product</Link><Link href="/blogs">Journal</Link><Link href="/docs">Docs</Link></nav>}</header><section className="relative mx-auto max-w-330 px-5 pb-24 pt-20 lg:px-8 lg:pt-28"><div className="max-w-4xl"><p className="mb-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-primary"><span className="size-1.5 rounded-full bg-primary" /> Product / capabilities</p><h1 className="text-balance text-6xl font-medium leading-[.9] tracking-[-0.075em] sm:text-8xl">Make every bug<br /><span className="text-primary">legible.</span></h1><p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">Traceora gives your team a shared view of what your software did, why it did it, and where the story changed.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/docs#install" className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground">Start tracing <ArrowRight className="size-4" /></Link><a href="#capabilities" className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium hover:border-primary/40">Explore capabilities <ChevronRight className="size-4" /></a></div></div><div className="mt-20 grid gap-5 lg:grid-cols-[1.35fr_.65fr]"><SignalMap /><div className="flex flex-col justify-between rounded-2xl border border-border bg-card/55 p-6 sm:p-8"><div><div className="mb-6 grid size-11 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary"><Code2 className="size-5" /></div><p className="font-mono text-[10px] uppercase tracking-[.18em] text-primary">The Traceora loop</p><h2 className="mt-4 text-3xl leading-tight tracking-tighter">Context that compounds.</h2><p className="mt-4 text-sm leading-7 text-muted-foreground">Instrument once. Every new event makes the next investigation faster.</p></div><div className="mt-8 flex flex-col gap-3 text-sm"><div className="flex items-center gap-3"><Check className="size-4 text-primary" /> No manual breadcrumbs</div><div className="flex items-center gap-3"><Check className="size-4 text-primary" /> Works across the stack</div><div className="flex items-center gap-3"><Check className="size-4 text-primary" /> Shareable by default</div></div></div></div></section><section id="capabilities" className="relative border-y border-border bg-card/30"><div className="mx-auto grid max-w-330 gap-12 px-5 py-20 lg:grid-cols-[.7fr_1.3fr] lg:px-8 lg:py-28"><div><p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">Built for the messy middle</p><h2 className="mt-5 max-w-md text-4xl tracking-[-.06em] sm:text-6xl">The details your dashboards leave out.</h2><p className="mt-6 max-w-md leading-7 text-muted-foreground">Choose a capability to see how Traceora turns invisible connections into something your whole team can reason about.</p></div><div><div className="flex flex-wrap gap-2 border-b border-border pb-5">{featureSets.map((item) => <button key={item.id} onClick={() => setActive(item.id)} className={`rounded-full border px-4 py-2 text-xs transition-colors ${active === item.id ? 'border-primary bg-primary text-primary-foreground' : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'}`}>{item.label}</button>)}</div><div className="grid gap-8 pt-10 sm:grid-cols-[auto_1fr]"><div className="grid size-14 shrink-0 place-items-center rounded-2xl border border-primary/25 bg-primary/10 text-primary"><Icon className="size-6" /></div><div><p className="font-mono text-xs text-primary">{selected.eyebrow}</p><h3 className="mt-3 text-3xl tracking-tighter sm:text-5xl">{selected.title}</h3><p className="mt-5 max-w-xl text-base leading-8 text-muted-foreground">{selected.body}</p><Link href="/docs" className="mt-7 inline-flex items-center gap-2 text-sm text-primary">See it in the docs <ArrowRight className="size-4" /></Link></div></div></div></div></section><section className="mx-auto max-w-330 px-5 py-20 lg:px-8 lg:py-28"><div className="grid gap-5 md:grid-cols-3"><div className="rounded-2xl border border-border bg-card/50 p-6"><ShieldCheck className="size-5 text-primary" /><h3 className="mt-12 text-xl tracking-[-.04em]">Private by design</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Keep sensitive payloads redacted while preserving the shape of every flow.</p></div><div className="rounded-2xl border border-border bg-card/50 p-6"><Sparkles className="size-5 text-primary" /><h3 className="mt-12 text-xl tracking-[-.04em]">Useful in development</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Fast feedback loops for the moment you are actually writing the code.</p></div><div className="rounded-2xl border border-border bg-card/50 p-6"><Zap className="size-5 text-primary" /><h3 className="mt-12 text-xl tracking-[-.04em]">Quiet in production</h3><p className="mt-3 text-sm leading-6 text-muted-foreground">Low overhead, high-signal traces that help you move from alert to answer.</p></div></div></section><footer className="border-t border-border"><div className="mx-auto flex max-w-330 flex-col gap-4 px-5 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-8"><Logo /><span>Runtime intelligence for teams who care how software feels.</span></div></footer></main> }
+export default function FeaturesPage() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [active, setActive] = useState("timeline");
+  const selected =
+    featureSets.find((item) => item.id === active) ?? featureSets[0];
+  const Icon = selected.icon;
+  return (
+    <main className="min-h-screen bg-background text-foreground">
+      <div className="pointer-events-none fixed inset-0 grid-bg opacity-25" />
+      <header className="relative z-30 border-b border-border bg-background/85 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-330 items-center justify-between px-5 py-4 lg:px-8">
+          <Logo />
+          <nav className="hidden items-center gap-7 text-sm md:flex">
+            <Link href="/" className="text-foreground">
+              Product
+            </Link>
+            <Link
+              href="/blogs"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Journal
+            </Link>
+            <Link
+              href="/docs"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Docs
+            </Link>
+          </nav>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/docs"
+              className="hidden rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground sm:block"
+            >
+              Read the docs <ArrowRight className="ml-1 inline size-3" />
+            </Link>
+            <button
+              className="md:hidden"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? (
+                <X className="size-5" />
+              ) : (
+                <Menu className="size-5" />
+              )}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <nav className="flex flex-col gap-4 border-t border-border px-5 py-5 text-sm md:hidden">
+            <Link href="/">Product</Link>
+            <Link href="/blogs">Journal</Link>
+            <Link href="/docs">Docs</Link>
+          </nav>
+        )}
+      </header>
+      <section className="relative mx-auto max-w-330 px-5 pb-24 pt-20 lg:px-8 lg:pt-28">
+        <div className="max-w-4xl">
+          <p className="mb-6 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.2em] text-primary">
+            <span className="size-1.5 rounded-full bg-primary" /> Product /
+            capabilities
+          </p>
+          <h1 className="text-balance text-6xl font-medium leading-[.9] tracking-[-0.075em] sm:text-8xl">
+            Make every bug
+            <br />
+            <span className="text-primary">legible.</span>
+          </h1>
+          <p className="mt-8 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
+            Traceora records runtime events locally and gives developers tools
+            to inspect, export, and connect the events they choose to capture.
+          </p>
+          <div className="mt-9 flex flex-wrap gap-3">
+            <Link
+              href="/docs#install"
+              className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Start tracing <ArrowRight className="size-4" />
+            </Link>
+            <a
+              href="#capabilities"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3 text-sm font-medium hover:border-primary/40"
+            >
+              Explore capabilities <ChevronRight className="size-4" />
+            </a>
+          </div>
+        </div>
+        <div className="mt-20 grid gap-5 lg:grid-cols-[1.35fr_.65fr]">
+          <SignalMap />
+          <div className="flex flex-col justify-between rounded-2xl border border-border bg-card/55 p-6 sm:p-8">
+            <div>
+              <div className="mb-6 grid size-11 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+                <Code2 className="size-5" />
+              </div>
+              <p className="font-mono text-[10px] uppercase tracking-[.18em] text-primary">
+                The Traceora loop
+              </p>
+              <h2 className="mt-4 text-3xl leading-tight tracking-tighter">
+                Context that compounds.
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">
+                Capture the events you need, then inspect evidence and share a
+                sanitized snapshot when useful.
+              </p>
+            </div>
+            <div className="mt-8 flex flex-col gap-3 text-sm">
+              <div className="flex items-center gap-3">
+                <Check className="size-4 text-primary" /> Opt-in trace
+                correlation
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="size-4 text-primary" /> Browser and server
+                adapters
+              </div>
+              <div className="flex items-center gap-3">
+                <Check className="size-4 text-primary" /> Reports reviewed
+                before sharing
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        id="capabilities"
+        className="relative border-y border-border bg-card/30"
+      >
+        <div className="mx-auto grid max-w-330 gap-12 px-5 py-20 lg:grid-cols-[.7fr_1.3fr] lg:px-8 lg:py-28">
+          <div>
+            <p className="font-mono text-[10px] uppercase tracking-[.2em] text-primary">
+              Built for the messy middle
+            </p>
+            <h2 className="mt-5 max-w-md text-4xl tracking-[-.06em] sm:text-6xl">
+              The details your dashboards leave out.
+            </h2>
+            <p className="mt-6 max-w-md leading-7 text-muted-foreground">
+              Choose a capability to see how Traceora helps developers inspect
+              and carry runtime evidence into their workflow.
+            </p>
+          </div>
+          <div>
+            <div className="flex flex-wrap gap-2 border-b border-border pb-5">
+              {featureSets.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActive(item.id)}
+                  className={`rounded-full border px-4 py-2 text-xs transition-colors ${active === item.id ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground hover:border-primary/40 hover:text-foreground"}`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid gap-8 pt-10 sm:grid-cols-[auto_1fr]">
+              <div className="grid size-14 shrink-0 place-items-center rounded-2xl border border-primary/25 bg-primary/10 text-primary">
+                <Icon className="size-6" />
+              </div>
+              <div>
+                <p className="font-mono text-xs text-primary">
+                  {selected.eyebrow}
+                </p>
+                <h3 className="mt-3 text-3xl tracking-tighter sm:text-5xl">
+                  {selected.title}
+                </h3>
+                <p className="mt-5 max-w-xl text-base leading-8 text-muted-foreground">
+                  {selected.body}
+                </p>
+                <Link
+                  href="/docs"
+                  className="mt-7 inline-flex items-center gap-2 text-sm text-primary"
+                >
+                  See it in the docs <ArrowRight className="size-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section className="mx-auto max-w-330 px-5 py-20 lg:px-8 lg:py-28">
+        <div className="grid gap-5 md:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-card/50 p-6">
+            <ShieldCheck className="size-5 text-primary" />
+            <h3 className="mt-12 text-xl tracking-[-.04em]">
+              Local-first capture
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Events stay in the local in-memory store by default. Reports are
+              sanitized; review metadata before sharing.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card/50 p-6">
+            <Sparkles className="size-5 text-primary" />
+            <h3 className="mt-12 text-xl tracking-[-.04em]">
+              Useful in development
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Fast feedback loops for the moment you are actually writing the
+              code.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card/50 p-6">
+            <Zap className="size-5 text-primary" />
+            <h3 className="mt-12 text-xl tracking-[-.04em]">
+              Plugs into your workflow
+            </h3>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Export reports for offline review or CI, attach them to Playwright
+              failures, and bridge event data to OpenTelemetry.
+            </p>
+          </div>
+        </div>
+      </section>
+      <footer className="border-t border-border">
+        <div className="mx-auto flex max-w-330 flex-col gap-4 px-5 py-8 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between lg:px-8">
+          <Logo />
+          <span>
+            Runtime intelligence for teams who care how software feels.
+          </span>
+        </div>
+      </footer>
+    </main>
+  );
+}

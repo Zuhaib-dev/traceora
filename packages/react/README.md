@@ -10,7 +10,7 @@
 <br/><br/>
 </div>
 
-> Connects React's lifecycle, your network requests, and unhandled errors into a single, comprehensive timeline — with a beautiful floating DevTools overlay.
+> Connects React's lifecycle, your network requests, and unhandled errors into a local event timeline — with a beautiful floating DevTools overlay.
 
 ---
 
@@ -92,6 +92,7 @@ The provider records React subtree commit durations. The **Perf** filter display
 | [`@traceora/core`](../core)               | The underlying event engine                                        |
 | [`@traceora/vite-plugin`](../vite-plugin) | Build-time instrumentation for supported named function components |
 | [`@traceora/next`](../next)               | Next.js-specific integration                                       |
+| [`@traceora/playwright`](../playwright)   | Attach sanitized diagnostic reports to Playwright tests            |
 
 ---
 

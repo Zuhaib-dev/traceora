@@ -57,7 +57,7 @@
 | [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — instruments named function components with block bodies.                            |
 | [`@traceora/express`](./packages/express)         | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/express)         | Express middleware — injects backend events into the frontend timeline via headers.                         |
 | [`@traceora/node`](./packages/node)               | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/node)               | Shared backend core — `AsyncLocalStorage`, Prisma extension, Mongoose plugin.                               |
-| [`@traceora/playwright`](./packages/playwright)   | New workspace package                                                                                                                            | Attach sanitized Traceora reports to failed Playwright tests.                                               |
+| [`@traceora/playwright`](./packages/playwright)   | v0.5.0                                                                                                                                           | Attach sanitized Traceora reports to failed Playwright tests.                                               |
 
 ---
 
@@ -234,7 +234,7 @@ See [`@traceora/playwright`](./packages/playwright/README.md) for attaching repo
 
 | Technology          | Role                                                           |
 | ------------------- | -------------------------------------------------------------- |
-| **TypeScript**      | 100% strictly typed — zero `any` escapes.                      |
+| **TypeScript**      | TypeScript APIs with typed public interfaces.                  |
 | **React 18**        | Deep lifecycle bindings & DevTools UI.                         |
 | **Vite + tsup**     | Blazing fast ESM / CJS dual-format bundling.                   |
 | **Babel**           | AST-based instrumentation for supported React component forms. |
