@@ -7,4 +7,6 @@ export * from "./errors";
 export * from "./console";
 export * from "./router";
 export * from "./state";
+export * from "./diagnostics";
+export * from "./otel";
 export * from "./performance";

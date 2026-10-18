@@ -1,0 +1,28 @@
+{
+  "name": "@traceora/playwright",
+  "version": "0.5.0",
+  "description": "Playwright test attachments for Traceora diagnostic reports",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint src/ --ext .ts",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@traceora/core": "workspace:*"
+  },
+  "license": "MIT"
+}

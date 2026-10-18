@@ -414,6 +414,12 @@ importers:
         specifier: ^5.3.3
         version: 5.7.3
 
+  packages/playwright:
+    dependencies:
+      '@traceora/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/react:
     dependencies:
       '@traceora/core':

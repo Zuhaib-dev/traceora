@@ -4,10 +4,10 @@
   <h1>@traceora/core</h1>
   <p><strong>The framework-agnostic runtime intelligence engine.</strong></p>
 
-  <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
-  <a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/dm/@traceora/core?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
-  <a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
-  <br/><br/>
+<a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/v/@traceora/core.svg?style=flat-square&color=099268" alt="npm" /></a>&ensp;
+<a href="https://www.npmjs.com/package/@traceora/core"><img src="https://img.shields.io/npm/dm/@traceora/core?style=flat-square&color=099268" alt="downloads" /></a>&ensp;
+<a href="https://github.com/zuhaib-dev/traceora/blob/main/LICENSE"><img src="https://img.shields.io/github/license/zuhaib-dev/traceora?style=flat-square&color=099268" alt="license" /></a>
+<br/><br/>
 </div>
 
 > This package contains the core logic for the entire Traceora ecosystem. It is **completely framework-agnostic** — no React, no Express, no Next.js dependencies. Framework adapters build on top of it.
@@ -24,14 +24,14 @@ npm install @traceora/core
 
 ## ✨ What's Inside
 
-| Module | Description |
-|---|---|
-| **`EventStore`** | In-memory ring buffer that efficiently stores the last *N* events. |
-| **`EventEmitter`** | Pub/sub system — every event gets a UUID and a high-resolution timestamp. |
-| **`TraceID`** | Correlation engine — links related events (click → network request → response) under one trace. |
+| Module                              | Description                                                                                       |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **`EventStore`**                    | In-memory ring buffer that efficiently stores the last _N_ events.                                |
+| **`EventEmitter`**                  | Pub/sub system — every event gets a UUID and a high-resolution timestamp.                         |
+| **`TraceID`**                       | Correlation engine — links related events (click → network request → response) under one trace.   |
 | **`setupNetworkInstrumentation()`** | Wraps `window.fetch` and `XMLHttpRequest` to capture request/response data and detect duplicates. |
-| **`setupErrorInstrumentation()`** | Hooks `window.onerror` and `unhandledrejection` for automatic error capture. |
-| **`PerformanceMonitor`** | Detects spam renders and rapidly repeating network requests. |
+| **`setupErrorInstrumentation()`**   | Hooks `window.onerror` and `unhandledrejection` for automatic error capture.                      |
+| **`PerformanceMonitor`**            | Detects spam renders and rapidly repeating network requests.                                      |
 
 ---
 
@@ -46,7 +46,7 @@ import {
   setupNetworkInstrumentation,
   setupErrorInstrumentation,
   PerformanceMonitor,
-} from '@traceora/core';
+} from "@traceora/core";
 
 // 1. Initialize storage + emitter
 const store = new EventStore();
@@ -62,21 +62,44 @@ setupErrorInstrumentation(emitter);
 new PerformanceMonitor(emitter);
 
 // 5. Manually trace a flow
-const trace = emitter.startTrace('User_Login');
-await trace.fetch('/api/login', { method: 'POST' });
+const trace = emitter.startTrace("User_Login");
+await trace.fetch("/api/login", { method: "POST" });
 ```
 
 The trace handle's `fetch()` method attaches its trace ID to that request. Ordinary requests are recorded as their own traces. Request bodies and headers are omitted unless explicitly enabled in the React provider configuration.
+
+## Diagnostic reports and state capture
+
+```ts
+import {
+  createDiagnosticReport,
+  parseDiagnosticReport,
+  instrumentStore,
+} from "@traceora/core";
+
+const report = createDiagnosticReport(emitter.getAll());
+const restored = parseDiagnosticReport(JSON.stringify(report));
+const stop = instrumentStore(store, emitter, {
+  name: "app-store",
+  redactPaths: ["auth.token", "profile.email"],
+});
+```
+
+Reports use the `traceora-report` version 1 JSON envelope and are re-sanitized at export/import boundaries. Store instrumentation accepts a `getState`/`subscribe` store interface, so Redux, Zustand, and custom stores can be connected without adding framework dependencies. Configure `redactPaths` for application-specific sensitive fields.
+
+## Performance analysis and OpenTelemetry
+
+`analyzeTracePerformance(events)` returns explainable findings with event IDs for slow network/database operations, long renders, and repeated renders. The React provider also records committed subtree render durations. Use `toOpenTelemetrySpans()` to convert Traceora events to span data, `fromOpenTelemetrySpans()` to import span data, or `attachOpenTelemetryExporter()` to batch events into a host-provided OpenTelemetry sink.
 
 ---
 
 ## 🔗 Related Packages
 
-| Package | Role |
-|---|---|
-| [`@traceora/react`](../react) | React bindings & DevTools UI |
+| Package                                   | Role                                                               |
+| ----------------------------------------- | ------------------------------------------------------------------ |
+| [`@traceora/react`](../react)             | React bindings & DevTools UI                                       |
 | [`@traceora/vite-plugin`](../vite-plugin) | Build-time instrumentation for supported named function components |
-| [`@traceora/next`](../next) | Next.js App Router integration |
+| [`@traceora/next`](../next)               | Next.js App Router integration                                     |
 
 ---
 

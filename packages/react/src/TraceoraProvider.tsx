@@ -1,5 +1,20 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { EventStore, EventEmitter, setupNetworkInstrumentation, PerformanceMonitor, setupErrorInstrumentation, setupConsoleInstrumentation, setupRouterInstrumentation, setupWebVitals } from "@traceora/core";
+import React, {
+  Profiler,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import {
+  EventStore,
+  EventEmitter,
+  setupNetworkInstrumentation,
+  PerformanceMonitor,
+  setupErrorInstrumentation,
+  setupConsoleInstrumentation,
+  setupRouterInstrumentation,
+  setupWebVitals,
+} from "@traceora/core";
 
 const TraceoraContext = createContext<EventEmitter | null>(null);
 
@@ -11,8 +26,13 @@ export interface TraceoraProviderConfig {
   maxEvents?: number;
 }
 
-export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: TraceoraProviderConfig }> = ({ children, config }) => {
-  const [emitter] = useState(() => new EventEmitter(new EventStore(config?.maxEvents)));
+export const TraceoraProvider: React.FC<{
+  children: React.ReactNode;
+  config?: TraceoraProviderConfig;
+}> = ({ children, config }) => {
+  const [emitter] = useState(
+    () => new EventEmitter(new EventStore(config?.maxEvents)),
+  );
   const enabled = config?.enabled ?? process.env.NODE_ENV === "development";
 
   useEffect(() => {
@@ -29,13 +49,14 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: Tr
     (window as any).__traceora_emitter = emitter;
     emitter.emit({
       type: "APP_START",
-      metadata: { timestamp: new Date().toISOString() }
+      metadata: { timestamp: new Date().toISOString() },
     });
     return () => {
       monitor.dispose();
-      disposers.reverse().forEach(dispose => dispose());
+      disposers.reverse().forEach((dispose) => dispose());
       if ((window as any).__traceora_emitter === emitter) {
-        if (previousEmitter) (window as any).__traceora_emitter = previousEmitter;
+        if (previousEmitter)
+          (window as any).__traceora_emitter = previousEmitter;
         else delete (window as any).__traceora_emitter;
       }
     };
@@ -43,7 +64,23 @@ export const TraceoraProvider: React.FC<{ children: React.ReactNode; config?: Tr
 
   return (
     <TraceoraContext.Provider value={emitter}>
-      {children}
+      <Profiler
+        id="TraceoraApp"
+        onRender={(_id, phase, actualDuration, baseDuration) => {
+          if (!enabled) return;
+          emitter.emit({
+            type: "COMPONENT_RENDER",
+            source: "React tree",
+            metadata: {
+              phase,
+              durationMs: Math.round(actualDuration * 100) / 100,
+              baseDurationMs: Math.round(baseDuration * 100) / 100,
+            },
+          });
+        }}
+      >
+        {children}
+      </Profiler>
     </TraceoraContext.Provider>
   );
 };

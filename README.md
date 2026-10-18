@@ -33,26 +33,31 @@
 
 ## ✨ Features
 
-|  | Feature | Description |
-|---|---|---|
-| 🪄 | **One-Click IDE Jump** | Open the exact file & line of an error in VSCode / Cursor directly from the DevTools overlay. |
-| 🛑 | **Live Network Mocking** | Click "Mock Request" on any API call to intercept it. Force 500 errors or fake JSON — zero code. |
-| 🔗 | **Trace propagation** | A trace handle can carry its ID through `trace.fetch()` into an instrumented backend request. |
-| ⚡ | **Component instrumentation** | The Vite plugin instruments named function components written as declarations or block-bodied functions. |
-| 🌐 | **Browser diagnostics** | Capture network timing, errors, route changes, and component lifecycle events in the local DevTools. |
+|     | Feature                          | Description                                                                                              |
+| --- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 🪄  | **One-Click IDE Jump**           | Open the exact file & line of an error in VSCode / Cursor directly from the DevTools overlay.            |
+| 🛑  | **Live Network Mocking**         | Click "Mock Request" on any API call to intercept it. Force 500 errors or fake JSON — zero code.         |
+| 🔗  | **Trace propagation**            | A trace handle can carry its ID through `trace.fetch()` into an instrumented backend request.            |
+| 🧰  | **Portable bug reports**         | Export a versioned, sanitized diagnostic report and reopen it locally or attach it to CI.                |
+| 🧪  | **Playwright diagnostics**       | Attach the browser timeline to failed and flaky Playwright tests.                                        |
+| 📊  | **Actionable performance clues** | Correlate render, network, and database timings with evidence-linked suggestions.                        |
+| 🔌  | **OpenTelemetry bridge**         | Convert Traceora events to spans or load OTLP-style spans into the local timeline.                       |
+| ⚡  | **Component instrumentation**    | The Vite plugin instruments named function components written as declarations or block-bodied functions. |
+| 🌐  | **Browser diagnostics**          | Capture network timing, errors, route changes, and component lifecycle events in the local DevTools.     |
 
 ---
 
 ## 📦 Ecosystem
 
-| Package | Latest | What it does |
-|---|---|---|
-| [`@traceora/core`](./packages/core) | [![npm](https://img.shields.io/npm/v/@traceora/core?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/core) | Framework-agnostic event engine — network interception, error catching, in-memory store. |
-| [`@traceora/react`](./packages/react) | [![npm](https://img.shields.io/npm/v/@traceora/react?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/react) | React bindings — context providers, error boundaries, floating DevTools timeline. |
-| [`@traceora/next`](./packages/next) | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/next) | Next.js App Router — client diagnostics, Route Handler correlation, and server-local Server Action capture. |
-| [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — instruments named function components with block bodies. |
-| [`@traceora/express`](./packages/express) | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/express) | Express middleware — injects backend events into the frontend timeline via headers. |
-| [`@traceora/node`](./packages/node) | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/node) | Shared backend core — `AsyncLocalStorage`, Prisma extension, Mongoose plugin. |
+| Package                                           | Latest                                                                                                                                           | What it does                                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| [`@traceora/core`](./packages/core)               | [![npm](https://img.shields.io/npm/v/@traceora/core?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/core)               | Framework-agnostic event engine — network interception, error catching, in-memory store.                    |
+| [`@traceora/react`](./packages/react)             | [![npm](https://img.shields.io/npm/v/@traceora/react?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/react)             | React bindings — context providers, error boundaries, floating DevTools timeline.                           |
+| [`@traceora/next`](./packages/next)               | [![npm](https://img.shields.io/npm/v/@traceora/next?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/next)               | Next.js App Router — client diagnostics, Route Handler correlation, and server-local Server Action capture. |
+| [`@traceora/vite-plugin`](./packages/vite-plugin) | [![npm](https://img.shields.io/npm/v/@traceora/vite-plugin?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/vite-plugin) | Babel compiler plugin — instruments named function components with block bodies.                            |
+| [`@traceora/express`](./packages/express)         | [![npm](https://img.shields.io/npm/v/@traceora/express?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/express)         | Express middleware — injects backend events into the frontend timeline via headers.                         |
+| [`@traceora/node`](./packages/node)               | [![npm](https://img.shields.io/npm/v/@traceora/node?style=flat-square&color=099268)](https://www.npmjs.com/package/@traceora/node)               | Shared backend core — `AsyncLocalStorage`, Prisma extension, Mongoose plugin.                               |
+| [`@traceora/playwright`](./packages/playwright)   | New workspace package                                                                                                                            | Attach sanitized Traceora reports to failed Playwright tests.                                               |
 
 ---
 
@@ -74,9 +79,9 @@ npm install @traceora/core @traceora/react @traceora/vite-plugin
 > Place `traceoraPlugin()` **before** the React plugin so it transforms code first.
 
 ```ts
-import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-import { traceoraPlugin } from '@traceora/vite-plugin';
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { traceoraPlugin } from "@traceora/vite-plugin";
 
 export default defineConfig({
   plugins: [traceoraPlugin(), react()],
@@ -86,16 +91,16 @@ export default defineConfig({
 **3 — Wrap your app** (`main.tsx`)
 
 ```tsx
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./App.tsx";
 import {
   TraceoraProvider,
   TraceoraErrorBoundary,
   TraceoraDevtools,
-} from '@traceora/react';
+} from "@traceora/react";
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <TraceoraProvider>
       <TraceoraErrorBoundary>
@@ -123,15 +128,17 @@ npm install @traceora/next
 **2 — Wrap your layout** (`app/layout.tsx`)
 
 ```tsx
-import { TraceoraNextProvider } from '@traceora/next/client';
+import { TraceoraNextProvider } from "@traceora/next/client";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <body>
-        <TraceoraNextProvider>
-          {children}
-        </TraceoraNextProvider>
+        <TraceoraNextProvider>{children}</TraceoraNextProvider>
       </body>
     </html>
   );
@@ -142,10 +149,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```ts
 // app/api/users/route.ts
-import { withTraceora, emitTraceEvent } from '@traceora/next';
+import { withTraceora, emitTraceEvent } from "@traceora/next";
 
 export const GET = withTraceora(async () => {
-  emitTraceEvent({ type: 'STATE_CHANGE', source: 'DB', metadata: { query: 'SELECT * FROM users' } });
+  emitTraceEvent({
+    type: "STATE_CHANGE",
+    source: "DB",
+    metadata: { query: "SELECT * FROM users" },
+  });
   return Response.json({ users: [] });
 });
 ```
@@ -168,21 +179,21 @@ npm install @traceora/express
 **2 — Add middleware** (before your routes)
 
 ```ts
-import express from 'express';
-import cors from 'cors';
-import { traceora } from '@traceora/express';
-import { emitTraceEvent } from '@traceora/node';
+import express from "express";
+import cors from "cors";
+import { traceora } from "@traceora/express";
+import { emitTraceEvent } from "@traceora/node";
 
 const app = express();
 
-app.use(cors({ exposedHeaders: ['X-Traceora-Events'] }));
+app.use(cors({ exposedHeaders: ["X-Traceora-Events"] }));
 app.use(traceora());
 
-app.get('/api/users', (req, res) => {
+app.get("/api/users", (req, res) => {
   emitTraceEvent({
-    type: 'STATE_CHANGE',
-    source: 'MySQL',
-    metadata: { query: 'SELECT * FROM users WHERE active = 1' },
+    type: "STATE_CHANGE",
+    source: "MySQL",
+    metadata: { query: "SELECT * FROM users WHERE active = 1" },
   });
   res.json({ ok: true });
 });
@@ -194,15 +205,40 @@ app.get('/api/users', (req, res) => {
 
 ---
 
+## 🧰 Debug reports, state and OpenTelemetry
+
+The DevTools export creates a versioned, sanitized report. Use **Open report** to inspect it offline. Capture store transitions with `instrumentStore()` and redact application-specific paths. For server or CI pipelines, `attachOpenTelemetryExporter()` converts events to OTel-style span data, while `fromOpenTelemetrySpans()` imports spans into Traceora's event model.
+
+```ts
+import { instrumentStore, attachOpenTelemetryExporter } from "@traceora/core";
+
+const stopStoreTracing = instrumentStore(store, emitter, {
+  name: "app-store",
+  redactPaths: ["auth.token", "profile.email"],
+});
+
+const otel = attachOpenTelemetryExporter(
+  emitter,
+  (spans) => myOtelSink(spans),
+  {
+    batchSize: 50,
+    onError: console.error,
+  },
+);
+// Call stopStoreTracing() and await otel.dispose() when your runtime shuts down.
+```
+
+See [`@traceora/playwright`](./packages/playwright/README.md) for attaching reports to test failures. Performance suggestions use visible timing thresholds and link to captured events; they are investigation clues, not automatic diagnoses.
+
 ## 🛠️ Tech Stack
 
-| Technology | Role |
-|---|---|
-| **TypeScript** | 100% strictly typed — zero `any` escapes. |
-| **React 18** | Deep lifecycle bindings & DevTools UI. |
-| **Vite + tsup** | Blazing fast ESM / CJS dual-format bundling. |
-| **Babel** | AST-based instrumentation for supported React component forms. |
-| **pnpm Workspaces** | Lightning-fast monorepo management. |
+| Technology          | Role                                                           |
+| ------------------- | -------------------------------------------------------------- |
+| **TypeScript**      | 100% strictly typed — zero `any` escapes.                      |
+| **React 18**        | Deep lifecycle bindings & DevTools UI.                         |
+| **Vite + tsup**     | Blazing fast ESM / CJS dual-format bundling.                   |
+| **Babel**           | AST-based instrumentation for supported React component forms. |
+| **pnpm Workspaces** | Lightning-fast monorepo management.                            |
 
 ---
 
